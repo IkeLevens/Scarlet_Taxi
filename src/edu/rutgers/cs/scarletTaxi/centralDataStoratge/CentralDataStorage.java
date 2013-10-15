@@ -13,11 +13,22 @@ import java.util.List;
  */
 public abstract class CentralDataStorage {
 	/**
+	 * This method returns a userID for a user whose username and email are given.  All userIDs
+	 * will be non-negative.  The caller must test for negative returns!
+	 * @param username
+	 * @param email
+	 * @return returns a userID if the username and email are associated with a user, and -1 if
+	 * there is no matching user.
+	 */
+	public int getUserID (final String username, final String email) {
+		return -1;
+	}
+	/**
 	 * This method retrieves a user by userID.
 	 * @param userID
 	 * @return The User, if any, matching the userID.  This must be tested for null!
 	 */
-	public User getUser(final int userID) {
+	public User getUser (final int userID) {
 		return null;
 	}
 	/**
