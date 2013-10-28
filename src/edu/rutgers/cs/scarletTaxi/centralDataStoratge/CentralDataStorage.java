@@ -4,7 +4,7 @@ import java.sql.Time;
 import java.util.List;
 
 /**
- * This class abstract class provides static methods to retreive Objects of the User, Car, Ride,
+ * This abstract class provides static methods to retrieve Objects of the User, Car, Ride,
  * and Request classes.  These objects provide access to the stored information of the Central Data
  * Storage module.  This class also provides static methods for updating and removing records from
  * the database.
@@ -20,7 +20,7 @@ public abstract class CentralDataStorage {
 	 * @return returns a userID if the username and email are associated with a user, and -1 if
 	 * there is no matching user.
 	 */
-	public int getUserID (final String username, final String email) {
+	public static int getUserID (final String username, final String email) {
 		return -1;
 	}
 	/**
@@ -28,7 +28,7 @@ public abstract class CentralDataStorage {
 	 * @param userID
 	 * @return The User, if any, matching the userID.  This must be tested for null!
 	 */
-	public User getUser (final int userID) {
+	public static User getUser (final int userID) {
 		return null;
 	}
 	/**
@@ -155,6 +155,16 @@ public abstract class CentralDataStorage {
 		return false;
 	}
 	/**
+	 * removes the ride from the database whose driver matches the userID field and whose time is
+	 * the closest to the current time in the future.
+	 * @param userID
+	 * @return returns true if a future ride for the user was found and removed successfully, and
+	 * false otherwise.
+	 */
+	public static boolean removeNextRide (final int userID) {
+		return false;
+	}
+	/**
 	 * adds a request to the database
 	 * @param newRequest
 	 * @return returns true if the request was added successfully, and false otherwise.
@@ -177,6 +187,16 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the request was found and successfully removed, and false otherwise.
 	 */
 	public static boolean removeRequest (final int userID, final Time departure) {
+		return false;
+	}
+	/**
+	 * removes the ride request from the database whose passenger matches the userID field and
+	 * whose time is the closest to the current time in the future.
+	 * @param userID
+	 * @return returns true if a future ride request for the user was found and successfully
+	 * removed, and false otherwise.
+	 */
+	public static boolean removeNextRequest (final int userID) {
 		return false;
 	}
 }
