@@ -1,5 +1,10 @@
 package edu.rutgers.cs.scarletTaxi.centralDataStoratge;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Time;
 import java.util.List;
 
@@ -12,6 +17,11 @@ import java.util.List;
  *
  */
 public abstract class CentralDataStorage {
+	public static Address getAddress(int addressID) {
+		Address address = null;
+		ResultSet results = runQuery("SELECT FROM addresses WHERE ")
+		return address;
+	}
 	/**
 	 * This method returns a userID for a user whose username and email are given.  All userIDs
 	 * will be non-negative.  The caller must test for negative returns!
@@ -21,7 +31,19 @@ public abstract class CentralDataStorage {
 	 * there is no matching user.
 	 */
 	public static int getUserID (final String username, final String email) {
-		return -1;
+		int userID = 0;
+		ResultSet results = runQuery("SELECT userID FROM users WHERE memberName = \""
+				+ username + "\" AND email = \""
+				+ email + "\";");
+		if (results == null) {
+			return -1;
+		}
+		try {
+			userID = results.getInt("userID");
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return userID;
 	}
 	/**
 	 * This method retrieves a user by userID.
@@ -29,7 +51,31 @@ public abstract class CentralDataStorage {
 	 * @return The User, if any, matching the userID.  This must be tested for null!
 	 */
 	public static User getUser (final int userID) {
-		return null;
+		User user = null;
+		ResultSet results = runQuery("SELECT userID, name, memberName, password, email, address, "
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification from users"
+				+ "WHERE userID = " + userID);
+		if (results == null) {
+			return null;
+		}
+		try {
+			user = new User(
+					results.getInt("userID"),
+					results.getString("name"),
+					results.getString("memberName"),
+					results.getBytes("password"),
+					results.getString("email"),
+					getAddress(results.getInt("address")),
+					results.getString("mobileNumber"),
+					results.getBoolean("receiveEmailNotification"),
+					results.getBoolean("receiveSMSNotification"));
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return user;
+	}
+	private static int getUserID (User user) {
+		return user.userID;
 	}
 	/**
 	 * This method retrieves a user by userName and password hash.  This can be used for user
@@ -121,6 +167,21 @@ public abstract class CentralDataStorage {
 	public static boolean addCar (final Car newCar) {
 		return false;
 	}
+	private static int getCarID (Car car) {
+		int carID= 0;
+		ResultSet results = runQuery("SELECT carID FROM cars WHERE driver = "
+				+ car.driver.userID + " AND make = \""
+				+ car.make + "\";");
+		if (results == null) {
+			return 0;
+		}
+		try {
+			carID = results.getInt("carID");
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return carID;
+	}
 	/**
 	 * removes a specific car from the database.
 	 * @param CarID
@@ -144,6 +205,22 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeRide (final int rideID) {
 		return false;
+	}
+	private static int getRideId(Ride ride) {
+		int rideID = 0;
+		int car = getCarID(ride.car);
+		ResultSet results = runQuery("SELECT rideID FROM rides WHERE car = "
+				+ car + " AND departure = "
+				+ ride.departure + ";");
+		if (results == null) {
+			return 0;
+		}
+		try {
+			rideID = results.getInt("rideID");
+		} catch (SQLException e){
+			System.err.println(e.getMessage());
+		}
+		return rideID;
 	}
 	/**
 	 * removes a ride from the database by the driver and departure time.
@@ -170,6 +247,15 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the request was added successfully, and false otherwise.
 	 */
 	public static boolean addRequest (final Request newRequest) {
+		int ride = 0;
+		int affectedRows = runUpdate (
+				"INSERT INTO requests (requestingUser, ride, sent, requestComment) VALUES ("
+				+ newRequest.passenger + ", "
+				+ ride + ", "
+				+newRequest.comment + ");");
+		if (affectedRows > 0) {
+			return true;
+		}
 		return false;
 	}
 	/**
@@ -178,6 +264,10 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the request was found and successfully removed, and false otherwise.
 	 */
 	public static boolean removeRequest (final int requestID) {
+		int affectedRows = runUpdate("DELETE FROM requests WHERE requestID = " +  requestID);
+		if (affectedRows > 0) {
+			return true;
+		}
 		return false;
 	}
 	/**
@@ -198,5 +288,41 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeNextRequest (final int userID) {
 		return false;
+	}
+	/**
+	 * runs a query on the MySQL server referenced in PasswordProtector.
+	 * @param query The query to be run, in string form.
+	 * @return The results of the query, or null in the case of a SQLException being thrown.
+	 */
+	private static ResultSet runQuery (String query) {
+		try {
+			Connection connection = DriverManager.getConnection(
+					PasswordProtector.HOST,
+					PasswordProtector.USER,
+					PasswordProtector.PASSWORD);
+			Statement statement = connection.createStatement();
+			return statement.executeQuery(query);
+			} catch (SQLException e) {
+				System.err.println(e.getMessage());
+			}
+		return null;
+	}
+	/**
+	 * updates the MySQL server referenced in PasswordProtector.
+	 * @param update the update to be effected in string form.
+	 * @return the number of effected rows, or 0 in the case of a SQLException being thrown.
+	 */
+	private static int runUpdate (String update) {
+		try {
+			Connection connection = DriverManager.getConnection(
+					PasswordProtector.HOST,
+					PasswordProtector.USER,
+					PasswordProtector.PASSWORD);
+			Statement statement = connection.createStatement();
+			return statement.executeUpdate(update);
+			} catch (SQLException e) {
+				System.err.println(e.getMessage());
+			}
+		return 0;
 	}
 }
