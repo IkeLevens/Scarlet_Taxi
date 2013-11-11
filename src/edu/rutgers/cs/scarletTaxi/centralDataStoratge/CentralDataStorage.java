@@ -19,7 +19,19 @@ import java.util.List;
 public abstract class CentralDataStorage {
 	public static Address getAddress(int addressID) {
 		Address address = null;
-		ResultSet results = runQuery("SELECT FROM addresses WHERE ")
+		ResultSet results = runQuery("SELECT streedAddress, city, zipCode FROM addresses WHERE "
+				+ "addressID= " + addressID);
+		if (results == null) {
+			return null;
+		}
+		try {
+			address = new Address(
+					results.getString("streetAddress"),
+					results.getString("city"),
+					results.getInt("zipCode"));
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
 		return address;
 	}
 	/**
@@ -74,6 +86,11 @@ public abstract class CentralDataStorage {
 		}
 		return user;
 	}
+	/**
+	 * get a userID from a User object
+	 * @param user User object
+	 * @return userID
+	 */
 	private static int getUserID (User user) {
 		return user.userID;
 	}
@@ -85,7 +102,29 @@ public abstract class CentralDataStorage {
 	 * @return The user, if any, matching the username and password.  This must be tested for null!
 	 */
 	public static User getUser (final String userName, final byte[] password) {
-		return null;
+		User user = null;
+		ResultSet results = runQuery("SELECT userID, name, memberName, password, email, address, "
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification from users"
+				+ "WHERE memberName = " + userName
+				+ " AND password = " + password);
+		if (results == null) {
+			return null;
+		}
+		try {
+			user = new User(
+					results.getInt("userID"),
+					results.getString("name"),
+					results.getString("memberName"),
+					results.getBytes("password"),
+					results.getString("email"),
+					getAddress(results.getInt("address")),
+					results.getString("mobileNumber"),
+					results.getBoolean("receiveEmailNotification"),
+					results.getBoolean("receiveSMSNotification"));
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return user;
 	}
 	/**
 	 * Retrieves a Request based on the 
@@ -295,15 +334,23 @@ public abstract class CentralDataStorage {
 	 * @return The results of the query, or null in the case of a SQLException being thrown.
 	 */
 	private static ResultSet runQuery (String query) {
+		Connection connection = null;
 		try {
-			Connection connection = DriverManager.getConnection(
+			connection = DriverManager.getConnection(
 					PasswordProtector.HOST,
 					PasswordProtector.USER,
 					PasswordProtector.PASSWORD);
 			Statement statement = connection.createStatement();
-			return statement.executeQuery(query);
+			ResultSet result = statement.executeQuery(query);
+			connection.close();
 			} catch (SQLException e) {
 				System.err.println(e.getMessage());
+			} finally {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					System.err.println(e.getMessage());
+				}
 			}
 		return null;
 	}
@@ -313,15 +360,24 @@ public abstract class CentralDataStorage {
 	 * @return the number of effected rows, or 0 in the case of a SQLException being thrown.
 	 */
 	private static int runUpdate (String update) {
+		Connection connection= null;
 		try {
-			Connection connection = DriverManager.getConnection(
+			connection = DriverManager.getConnection(
 					PasswordProtector.HOST,
 					PasswordProtector.USER,
 					PasswordProtector.PASSWORD);
 			Statement statement = connection.createStatement();
-			return statement.executeUpdate(update);
+			int result = statement.executeUpdate(update);
+			connection.close();
+			return result;
 			} catch (SQLException e) {
 				System.err.println(e.getMessage());
+			} finally {
+				try {
+					connection.close();
+				} catch (SQLException e){
+					System.err.println(e.getMessage());
+				}
 			}
 		return 0;
 	}
