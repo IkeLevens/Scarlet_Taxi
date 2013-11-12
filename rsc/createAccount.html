@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Scarlet Taxi</title>
+        <link href="css/bootstrap.css" rel="stylesheet" media="screen"></link>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <meta charset="utf-8">
+    </head>
+
+    <script>
+
+        function checkRegistrationForm() {
+        	name = $("#inputName").val();
+        	userName = $("#inputUsername").val();
+        	email = $("#inputEmail").val();
+        	mobile = $("#inputMobile").val();
+        	password = $("#inputPassword").val();
+        	checkPassword = $("#confirmPassword").val();
+        	
+        	console.log(name);
+        	console.log(userName);
+        	
+        	if(name.length < 2) {
+        		$("#name-group").addClass("has-error");
+       			$("#nameError").text("* Name must be at least 2 characters long.");
+        	} else {
+        		$("#name-group").removeClass("has-error");
+        		$("#nameError").text("");
+        	}
+        	
+        	if(userName.length < 6) {
+        		$("#username-group").addClass("has-error");
+        		$("#usernameError").text("* Username must be at least 6 characters long.");
+        	} else {
+        		$("#username-group").removeClass("has-error");
+        		$("#usernameError").text("");
+        	}
+        	
+        	if(checkEmail(email) == false) {
+        		$("#email-group").addClass("has-error");
+        		$("#emailError").text("* Email is not valid.");
+        	} else {
+        		$("email-group").removeClass("has-error");
+        		$("#emailError").text("");
+        	}
+        	
+        	if(checkMobile(mobile) == false) {
+        		$("#mobile-group").addClass("has-error");
+        		$("#mobileError").text("* Mobile number must be 10 digits of format XXXXXXXXXX.");
+        	} else {
+        		$("#mobile-group").removeClass("has-error");
+        		$("#mobileError").text("");
+        	}
+        	
+        	if(password != checkPassword) {
+        		$("#password-group").addClass("has-error");
+        		$("#confirmPassword-group").addClass("has-error");
+        		$("#passwordError").text("* Passwords do not match.");
+        	} else if (password.length < 12 || password.length > 21 ) {
+           		$("#password-group").addClass("has-error");
+           		$("#confirmPassword-group").addClass("has-error");
+           		$("#passwordError").text("* Passwords must be between 12 and 21 characters long.");
+        	} else {
+        		$("#password-group").removeClass("has-error");
+        		$("#confirmPassword-group").removeClass("has-error");
+        		$("#passwordError").text("");
+        	} 	
+        	
+        }
+        
+        function checkMobile(mobile) {
+        	var phoneno = /^\d{10}$/;
+        	if(mobile.match(phoneno)) {
+        		return true;
+       		} else {
+        	    return false;
+        	}
+        }
+        
+        function checkEmail(email) {
+        	var emailRegEx = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        	if(email.match(emailRegEx)) {
+        		return true;
+        	} else {
+        		return false;
+        	}
+        }
+
+    </script>
+
+    <body>
+        <div class="container">
+            <h1>Sign me up!</h1>
+            <h3>A 93.99% bullshit free service, or your misery back.</h3>
+            <br>
+            <form class="form-horizontal" role="form">
+
+                <div id="name-group" class="form-group">
+                    <label for="inputName" class="col-sm-2 control-label">Name</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="inputName" placeholder="John">
+                    </div>
+                    <p id="nameError"></p>
+                </div>
+
+                <div id="username-group" class="form-group">
+                    <label for="inputUsername" class="col-sm-2 control-label">Username</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="inputUsername" placeholder="John123">
+                    </div>
+                    <p id="usernameError"></p>
+                </div>
+
+                <div id="email-group" class="form-group">
+                    <label for="inputEmail" class="col-sm-2 control-label">Email</label>
+                    <div class="col-sm-2">
+                        <input type="email" class="form-control" id="inputEmail" placeholder="email@service.com">
+                    </div>
+                    <p id="emailError"></p>
+                </div>
+
+                <div id="mobile-group" class="form-group">
+                    <label for="inputMobile" class="col-sm-2 control-label">Mobile Number</label>
+                    <div class="col-sm-2">
+                        <input type="tel" class="form-control" id="inputMobile" placeholder="1234567890">
+                    </div>
+                    <p id="mobileError"></p>
+                </div>
+
+                <div id="password-group" class="form-group">
+                    <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+                    <div class="col-sm-2">
+                        <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+                    </div>
+                    <p id="passwordError"></p>
+                </div>
+
+                <div id="confirmPassword-group" class="form-group">
+                    <label for="confirmPassword" class="col-sm-2 control-label">Confirm Password</label>
+                    <div class="col-sm-2">
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password">
+                    </div>
+                </div>
+                <br>
+                <div class="col-sm-2 col-sm-offset-1">
+                    <button onclick="checkRegistrationForm()" type="button" class="btn btn-success btn-block">Register</button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

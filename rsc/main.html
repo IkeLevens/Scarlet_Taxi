@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Scarlet Taxi</title>
+        <link href="css/bootstrap.css" rel="stylesheet" media="screen"></link>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <style>
+            #map-canvas {
+                width: 700px;
+                height: 300px;
+            }
+        </style>
+
+        <script>
+            var geocoder;
+            var map;
+            function initialize() {
+                geocoder = new google.maps.Geocoder();
+                var mapOptions = {
+                    zoom: 12,
+                    center: new google.maps.LatLng(40.48704, -74.45214),
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+
+                map = new google.maps.Map(document.getElementById('map-canvas'),
+                mapOptions);
+            }
+
+            function loadScript() {
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&' +
+                'callback=initialize';
+                document.body.appendChild(script);
+            }
+            window.onload = loadScript;
+
+
+            function formSubmit() {
+                viewPickUpMap();
+                return false;
+            }
+
+            function viewPickUpMap() {
+                var address = $('#Address').val();
+                if ( $('#Address').val() === "") {
+                    } else {
+                    codeAddress();
+                }
+            }
+
+            function codeAddress() {
+                var address = $('#Address').val();
+                geocoder.geocode( { 'address': address}, function(results, status) {
+                    if (status === 'OK') {
+                        map.setCenter(results[0].geometry.location);
+                        map.setZoom(16);
+                        var marker = new google.maps.Marker({
+                            map: map,
+                            position: results[0].geometry.location
+                        });
+                    } else {
+                        $("#addressError").text("Bad address input. Please try again.");
+                        $("#addressError").css('color', 'red');
+                        $("#Address").val("");
+                        //alert('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+            }
+
+        </script>
+
+    </head>
+
+    <body>
+        <div class="navbar navbar-static-top" role="navigation">
+            <div class="container">
+                <div class="navbar-inner">       
+                    <p class="brand" href="#">Scarlet Taxi</p>
+                    <ul class="nav">
+                    </ul>
+                    <form class="navbar-form pull-right">
+                        <input type="text" class="span2" placeholder="Username">
+                        <input type="text" class="span2" placeholder="Password">
+                        <input type="submit" value="Login" class="btn btn-primary">
+                        <input type="submit" value="Sign Up" class="btn btn-warning">
+                    </form>
+                </div> <!--navbar-inner-->
+            </div> <!--container-->
+        </div> <!--navbar-->
+
+        <center>
+            <form onsubmit="return formSubmit()" class="navbar-form">
+                <p id="addressError">Type in an address in the form and click submit to see it in Google Maps.</p>
+                <input id="Address" type="text" class="span" placeholder="Address">
+                <input type="submit" class="btn btn-primary" onclick="viewPickUpMap()">
+            </form>
+        </center>
+        <br>
+
+        <div id="map-canvas" class="container">
+        </div>
+   
+        <div class="jumbotron pagination-centered">
+        <div class="container">
+            <img src="img/scarlet_taxi.png" alt="scarlet_taxi" height="60%" width="60%" ></img>
+            <h3>Scarlet Taxi is a service that allows Rutgers faculty and students to connect and arrange carpools with one another.  With Scarlet Taxi, you can post rides and
+                volunteer to drive, browse and search for rides to carpool with, or request rides if your needs are not met.  Scarlet Taxi will also allow you and your carpool buddies to decide on a specific time and place to meet, whether on or off campus, giving you the ability to choose when and where you want to go.
+            </h3>
+            <p><a class="btn btn-danger btn-lg">Try it now!</a></p>
+
+
+        </div>
+        </div>
+
+        <div class="navbar navbar-fixed-bottom" role="footer">
+            <div class="container">
+                <div class="navbar-inner">
+                    <span class="glyphicons-halflings glyphicons-copyright-mark"></span>
+                    <h6>Rutgers University CS431 | Professor Alex Borgida | Group 5</h6>
+                </div>
+            </div>
+        </div>
+
+
+        <script src="http://code.jquery.com/jquery.js"></script>
+        <script src="js/bootstrap.js"></script>
+    </body>
+</html>
+

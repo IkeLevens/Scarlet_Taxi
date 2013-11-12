@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+:
+    <head>
+        <title>Scarlet Taxi</title>
+        <link href="css/bootstrap.css" rel="stylesheet" media="screen"></link>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <style>
+            #map-canvas {
+                width: 700px;
+                height: 300px;
+            }
+        </style>
+
+        <script>
+            var geocoder;
+            var map;
+            function initialize() {
+                geocoder = new google.maps.Geocoder();
+                var mapOptions = {
+                    zoom: 12,
+                    center: new google.maps.LatLng(40.48704, -74.45214),
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+
+                map = new google.maps.Map(document.getElementById('map-canvas'),
+                mapOptions);
+            }
+
+            function loadScript() {
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&' +
+                'callback=initialize';
+                document.body.appendChild(script);
+            }
+            window.onload = loadScript;
+            
+
+            function viewPickUpMap() {
+            	console.log("YEAH BUDDY");
+                var address = $('#Address').val();
+                if ( $('#Address').val() === "") {
+                    } else {
+                    codeAddress();
+                }
+            }
+
+            function codeAddress() {
+                var address = $('#Address').val();
+                geocoder.geocode( { 'address': address}, function(results, status) {
+                    if (status === 'OK') {
+                        map.setCenter(results[0].geometry.location);
+                        map.setZoom(16);
+                        var marker = new google.maps.Marker({
+                            map: map,
+                            position: results[0].geometry.location
+                        });
+                    } else {
+                        $("#addressError").text("Bad address input. Please try again.");
+                        $("#addressError").css('color', 'red');
+                        $("#Address").val("");
+                    }
+                });
+            }
+
+        </script>
+
+    </head>
+
+    <body>
+		
+	    <div class="container">
+		        
+	    <select id="campus" onchange="viewPickUpMap()">
+			<option value='' style='display:none;'>Select Campus</option>
+		    <option value='0'>Livingston</option>
+		    <option value='1'>Bush</option>
+		    <option value='2'>College Ave</option>
+		    <option value='3'>Douglass</option>
+		    <option value='4'>Cook</option>
+		</select>
+		
+	    </div>
+	    <br>
+	
+	    <div id="map-canvas" class="container">
+	    </div>
+	
+    </body>
+</html>
+
