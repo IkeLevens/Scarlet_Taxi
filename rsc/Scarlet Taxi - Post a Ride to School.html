@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Scarlet Taxi - Post a Ride</title>
+
+	<script type="text/javascript">
+	
+	function validateForm()
+	{
+		var x=document.forms["postRideForm"]["destCampus"].value;
+		if (x==null || x=="" || x == "Destination Campus")
+		{
+			alert("Please choose a destination campus.");
+			return false;
+		}
+		x=document.forms["postRideForm"]["pickUpLoc"].value;
+		if (x==null || x=="" || x == "Rider Pickup Location")
+		{
+			alert("Please choose a rider pickup location.");
+			return false;
+		}
+		x=document.forms["postRideForm"]["departure"].value;
+		if (x==null || x=="" || x == "Departure Time")
+		{
+			alert("Please choose the departure time.");
+			return false;
+		}
+		x=document.forms["postRideForm"]["carMake"].value;
+		if (x==null || x=="" || x == "Make of Car")
+		{
+			alert("Please provide the make of your car.");
+			return false;
+		}
+		x=document.forms["postRideForm"]["carBodyStyle"].value;
+		if (x==null || x=="" || x == "Body Style of Car")
+		{
+			alert("Please provide the body style of your car.");
+			return false;
+		}
+		x=document.forms["postRideForm"]["carColor"].value;
+		if (x==null || x=="" || x == "Color of Car")
+		{
+			alert("Please provide the color of your car.");
+			return false;
+		}
+		x=document.forms["postRideForm"]["openSeats"].value;
+		if (x==null || x=="" || x == "Number of Open Seats")
+		{
+			alert("Please choose the number of open seats in your car.");
+			return false;
+		}
+		
+	}
+
+	</script>
+
+</head>
+
+<body>
+
+<h1>Post a Ride to School</h1>
+
+<div class="postRidetoSchoolForm">
+	<form name="postRideForm" onsubmit="validateForm()">
+	<h3>Ride Information:</h3>
+	<input type="text" name="destCampus" value="Destination Campus" size="50"><br><br>
+	<input type="text" name="pickUpLoc" value="Rider Pickup Location" size="50"><br><br>
+	<input type="text" name="departure" value="Departure Time" size="50"><br><br>
+	<h3>Car Information:</h3>
+	<input type="text" name="carMake" value="Make of Car" size="50"><br><br>
+	<input type="text" name="carBodyStyle" value="Body Style of Car" size="50"><br><br>
+	<input type="text" name="carColor" value="Color of Car" size="50"><br><br>
+	<input type="text" name="openSeats" value="Number of Open Seats" size="50"><br><br>
+	<input type="submit" value="Submit"> <button type="button">Cancel</button> <!--Cancel will go back to main page-->
+	</form>
+</div>
+
+</body>
+</html>
