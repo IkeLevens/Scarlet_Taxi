@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,10 +26,14 @@ public abstract class CentralDataStorage {
 			return null;
 		}
 		try {
-			address = new Address(
-					results.getString("streetAddress"),
-					results.getString("city"),
-					results.getInt("zipCode"));
+			if (results.next()) {
+				address = new Address(
+						results.getString("streetAddress"),
+						results.getString("city"),
+						results.getInt("zipCode"));
+			} else {
+				return null;
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -51,7 +56,11 @@ public abstract class CentralDataStorage {
 			return -1;
 		}
 		try {
-			userID = results.getInt("userID");
+			if(results.next()) {
+				userID = results.getInt("userID");
+			} else {
+				return -1;
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -71,16 +80,20 @@ public abstract class CentralDataStorage {
 			return null;
 		}
 		try {
-			user = new User(
-					results.getInt("userID"),
-					results.getString("name"),
-					results.getString("memberName"),
-					results.getBytes("password"),
-					results.getString("email"),
-					getAddress(results.getInt("address")),
-					results.getString("mobileNumber"),
-					results.getBoolean("receiveEmailNotification"),
-					results.getBoolean("receiveSMSNotification"));
+			if (results.next()) {
+				user = new User(
+						results.getInt("userID"),
+						results.getString("name"),
+						results.getString("memberName"),
+						results.getBytes("password"),
+						results.getString("email"),
+						getAddress(results.getInt("address")),
+						results.getString("mobileNumber"),
+						results.getBoolean("receiveEmailNotification"),
+						results.getBoolean("receiveSMSNotification"));
+			} else {
+				return null;
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -111,16 +124,20 @@ public abstract class CentralDataStorage {
 			return null;
 		}
 		try {
-			user = new User(
-					results.getInt("userID"),
-					results.getString("name"),
-					results.getString("memberName"),
-					results.getBytes("password"),
-					results.getString("email"),
-					getAddress(results.getInt("address")),
-					results.getString("mobileNumber"),
-					results.getBoolean("receiveEmailNotification"),
-					results.getBoolean("receiveSMSNotification"));
+			if (results.next()) {
+				user = new User(
+						results.getInt("userID"),
+						results.getString("name"),
+						results.getString("memberName"),
+						results.getBytes("password"),
+						results.getString("email"),
+						getAddress(results.getInt("address")),
+						results.getString("mobileNumber"),
+						results.getBoolean("receiveEmailNotification"),
+						results.getBoolean("receiveSMSNotification"));
+			} else {
+				return null;
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -129,10 +146,30 @@ public abstract class CentralDataStorage {
 	/**
 	 * Retrieves a Request based on the 
 	 * @param requestID
-	 * @return The request, if any, matching the requestID.  THis must be tested for null!
+	 * @return The request, if any, matching the requestID.  This must be tested for null!
 	 */
 	public static Request getRequest (final int requestID) {
-		return null;
+		Request request = null;
+		ResultSet results = runQuery("SELECT requestingUser, ride, sent, requestComment FROM requests WHERE requestID = " + requestID);
+		if (results == null) {
+			return null;
+		}
+		try {
+			if (results.next()) {
+				User passenger = getUser(results.getInt("requestingUser"));
+				Ride ride = getRide(results.getInt("ride"));
+				request = new Request(
+						passenger,
+						ride,
+						results.getTime("sent"),
+						results.getString("requestComment"));
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return request;
 	}
 	/**
 	 * Retrieves a list of requests made by a specific user.
@@ -141,7 +178,20 @@ public abstract class CentralDataStorage {
 	 * there is no such user or the user has made no requests.
 	 */
 	public static List<Request> getRequests (final int userID) {
-		return null;
+		ResultSet requestIDs = runQuery("SELECT requestID from requests WHERE requestingUser = " + userID);
+		if (requestIDs == null) {
+			return null;
+		}
+		ArrayList<Request> requests = new ArrayList<Request>();
+		try {
+			while (requestIDs.next()) {
+				requests.add(getRequest(requestIDs.getInt("requestID")));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return requests;
 	}
 	/**
 	 * Retrieves information about a ride by its rideID.
@@ -150,7 +200,31 @@ public abstract class CentralDataStorage {
 	 * checked for null!
 	 */
 	public static Ride getRide (final int rideID) {
-		return null;
+		ResultSet results = runQuery("SELECT car, origin, destination, toCampus, departure, seatsTaken from rides WHERE rideID = "+ rideID);
+		if (results == null) {
+			return null;
+		}
+		Ride ride = null;
+		try {
+			if (results.next()) {
+				Car car = getCar(results.getInt("car"));
+				Location origin = getLocation(results.getInt("origin"));
+				Location destination = getLocation(results.getInt("destination"));
+				ride = new Ride(
+						car,
+						origin,
+						destination,
+						results.getBoolean("toCampus"),
+						results.getTime("departure"),
+						results.getInt("seatsTaken")
+				);
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return ride;
 	}
 	/**
 	 * Retrieves information about all ride offers a specific user has made.
@@ -159,6 +233,27 @@ public abstract class CentralDataStorage {
 	 * empty if either there is no such user or the user has made no ride offers.
 	 */
 	public static List<Ride> getRides (final int userID) {
+		ResultSet cars = runQuery("SELECT carID FROM cars WHERE driver = " + userID);
+		if (cars == null) {
+			return null;
+		}
+		ArrayList<Ride> rides = new ArrayList<Ride>();
+		try {
+			while (cars.next()) {
+				ResultSet rideIDs = runQuery("SELECT rideID from rides WHERE car = " + cars.getInt("carID"));
+				if (rideIDs == null) {
+					continue;
+				}
+				while (rideIDs.next()) {
+					rides.add(getRide(rideIDs.getInt("rideID")));
+				}
+			}
+		} catch (SQLException e) {
+			System.err.println (e.getMessage());
+		}
+		return null;
+	}
+	private static Car getCar (final int carID){
 		return null;
 	}
 	/**
@@ -327,6 +422,9 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeNextRequest (final int userID) {
 		return false;
+	}
+	private static Location getLocation (final int locationID) {
+		return null;
 	}
 	/**
 	 * runs a query on the MySQL server referenced in PasswordProtector.
