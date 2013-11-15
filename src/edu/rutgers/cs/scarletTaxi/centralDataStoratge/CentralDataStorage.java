@@ -331,8 +331,15 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the user was found and successfully modified, and false otherwise.
 	 */
 	public static boolean modifyUser (final int userID, final User newData) {
-		int rowsAffected = runUpdate("UPDATE users SET memberName = " + " WHERE userID = " + userID);
+		int rowsAffected = runUpdate("UPDATE users SET memberName=" + newData.name + ", userName="
+	+ newData.username +  ", memberPassword=" + newData.password + ", email=" + newData.email
+	+ ", address=" + getAddressID(newData.address) + ", mobileNumber=" + newData.mobileNumber
+	+ ", receiveEmailNotification=" + newData.receiveEmailNotification + ", receiveSMSNotification="
+	+ newData.receiveSMSNOtification  + " WHERE userID = " + userID);
 		return (rowsAffected > 0);
+	}
+	private static int getAddressID(Address address) {
+		return 0;
 	}
 	/**
 	 * add a car to the database.
