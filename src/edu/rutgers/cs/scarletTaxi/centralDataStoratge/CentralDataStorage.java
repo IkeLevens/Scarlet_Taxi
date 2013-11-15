@@ -49,7 +49,7 @@ public abstract class CentralDataStorage {
 	 */
 	public static int getUserID (final String username, final String email) {
 		int userID = 0;
-		ResultSet results = runQuery("SELECT userID FROM users WHERE memberName = \""
+		ResultSet results = runQuery("SELECT userID FROM users WHERE userName = \""
 				+ username + "\" AND email = \""
 				+ email + "\";");
 		if (results == null) {
@@ -73,7 +73,7 @@ public abstract class CentralDataStorage {
 	 */
 	public static User getUser (final int userID) {
 		User user = null;
-		ResultSet results = runQuery("SELECT userID, name, memberName, password, email, address, "
+		ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
 				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification from users"
 				+ "WHERE userID = " + userID);
 		if (results == null) {
@@ -83,8 +83,8 @@ public abstract class CentralDataStorage {
 			if (results.next()) {
 				user = new User(
 						results.getInt("userID"),
-						results.getString("name"),
 						results.getString("memberName"),
+						results.getString("userName"),
 						results.getBytes("password"),
 						results.getString("email"),
 						getAddress(results.getInt("address")),
@@ -116,9 +116,9 @@ public abstract class CentralDataStorage {
 	 */
 	public static User getUser (final String userName, final byte[] password) {
 		User user = null;
-		ResultSet results = runQuery("SELECT userID, name, memberName, password, email, address, "
+		ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
 				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification from users"
-				+ "WHERE memberName = " + userName
+				+ "WHERE userName = " + userName
 				+ " AND password = " + password);
 		if (results == null) {
 			return null;
@@ -127,8 +127,8 @@ public abstract class CentralDataStorage {
 			if (results.next()) {
 				user = new User(
 						results.getInt("userID"),
-						results.getString("name"),
 						results.getString("memberName"),
+						results.getString("userName"),
 						results.getBytes("password"),
 						results.getString("email"),
 						getAddress(results.getInt("address")),
@@ -251,9 +251,26 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println (e.getMessage());
 		}
-		return null;
+		return rides;
 	}
 	private static Car getCar (final int carID){
+		ResultSet results = runQuery("SELECT driver, make, bodyStyle, color, seats FROM cars WHERE carID = " + carID);
+		if (results == null) {
+			return null;
+		}
+		Car car = null;
+		try {
+			User driver = getUser(results.getInt("driver"));
+			car = new Car(
+					driver,
+					results.getString("make"),
+					Car.getBodyStyle(results.getInt("bodyStyle")),
+					Car.getColor(results.getInt("color")),
+					results.getInt("seats")
+			);
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
 		return null;
 	}
 	/**
@@ -263,7 +280,20 @@ public abstract class CentralDataStorage {
 	 * be empty if either there is no such user or the user has not registered any cars.
 	 */
 	public static List<Car> getCars(final int userID){
-		return null;
+		ResultSet carIDs = runQuery("SELECT carID FROM cars WHERE driver = " + userID);
+		if (carIDs == null) {
+			return null;
+		}
+		ArrayList<Car> cars = new ArrayList<Car>();
+		try {
+			while (carIDs.next()) {
+				cars.add(getCar(carIDs.getInt("carID")));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return cars;
 	}
 	/**
 	 * Add a new user to the database
@@ -271,7 +301,17 @@ public abstract class CentralDataStorage {
 	 * @return Returns true if the user was added successfully, and false otherwise.
 	 */
 	public static boolean addUser (final User newUser) {
-		return false;
+		int rowsAffected = runUpdate("INSERT INTO users (memberName, userName, memberPassword, email, address, mobileNumber, receiveEmailNotification, receiveSMSNotification)VALUES ("
+				+ newUser.name + ", "
+				+ newUser.username + ", "
+				+ newUser.password + ", "
+				+ newUser.email + ", "
+				+ newUser.address + ", "
+				+ newUser.mobileNumber + ", "
+				+ newUser.receiveEmailNotification + ", "
+				+ newUser.receiveSMSNOtification + ")"
+		);
+		return (rowsAffected > 0);
 	}
 	/**
 	 * Remove a user from the database by userID
@@ -279,7 +319,8 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the user was found and successfully removed, and false otherwise.
 	 */
 	public static boolean removeUser (final int userID) {
-		return false;
+		int rowsAffected = runUpdate("DELETE FROM users WHERE userID = " + userID);
+		return (rowsAffected > 0);
 	}
 	/**
 	 * modify a user's profile information in the database
@@ -290,7 +331,8 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the user was found and successfully modified, and false otherwise.
 	 */
 	public static boolean modifyUser (final int userID, final User newData) {
-		return false;
+		int rowsAffected = runUpdate("UPDATE users SET memberName = " + " WHERE userID = " + userID);
+		return (rowsAffected > 0);
 	}
 	/**
 	 * add a car to the database.
@@ -422,6 +464,12 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeNextRequest (final int userID) {
 		return false;
+	}
+	public static List<RequestNotification> getRequestNotifications () {
+		return null;
+	}
+	public static List<RideNotification> getRideNotifications () {
+		return null;
 	}
 	private static Location getLocation (final int locationID) {
 		return null;
