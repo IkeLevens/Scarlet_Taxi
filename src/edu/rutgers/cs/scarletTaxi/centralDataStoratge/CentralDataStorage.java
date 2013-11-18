@@ -171,6 +171,21 @@ public abstract class CentralDataStorage {
 		}
 		return request;
 	}
+	private static int getRequestID (final Request request) {
+		ResultSet results = runQuery("SELECT requestID FROM requests WHERE requestingUser = " + request.passenger + " AND ride = " + getRideId(request.ride));
+		int id = 0;
+		if (results == null) {
+			return 0;
+		}
+		try {
+			if (results.next()) {
+				id = results.getInt("requestID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return id;
+	}
 	/**
 	 * Retrieves a list of requests made by a specific user.
 	 * @param userID
@@ -271,7 +286,7 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
-		return null;
+		return car;
 	}
 	/**
 	 * Retrieves a list of all cars registered to a specific user.
@@ -339,7 +354,22 @@ public abstract class CentralDataStorage {
 		return (rowsAffected > 0);
 	}
 	private static int getAddressID(Address address) {
-		return 0;
+		int id = 0;
+		ResultSet results = runQuery("SELECT addressID FROM addresses WHERE streetAddress = " + address.streetAddress
+				+ " AND city = " + address.city
+				+ " and zipCode = " + address.zipCode
+		);
+		if (results == null) {
+			return 0;
+		}
+		try {
+			if (results.next()) {
+				id = results.getInt("addressID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return id;
 	}
 	/**
 	 * add a car to the database.
@@ -370,8 +400,9 @@ public abstract class CentralDataStorage {
 	 * @param CarID
 	 * @return returns true if the specified car was successfully removed, and false otherwise.
 	 */
-	public static boolean removeCar (final int CarID) {
-		return false;
+	public static boolean removeCar (final int carID) {
+		int rowsAffected = runUpdate("DELETE FROM cars WHERE CarID = " + carID);
+		return (rowsAffected > 0);
 	}
 	/**
 	 * adds a ride to the database.
@@ -379,7 +410,15 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the ride was added successfully, and false otherwise.
 	 */
 	public static boolean addRide (final Ride newRide) {
-		return false;
+		int rowsAffected = runUpdate("INSERT INTO rides (car, origin, destination, toCampus, departure, seatsTaken) VALUES ("
+				+ getCarID(newRide.car) + ", "
+				+ getLocationID(newRide.origin) + ", "
+				+ getLocationID(newRide.destination) + ", "
+				+ newRide.toCampus + ", "
+				+ newRide.departure + ", "
+				+ newRide.seatsTaken + ")"
+		);
+		return (rowsAffected > 0);
 	}
 	/**
 	 * removes a ride from the database by its rideID.
@@ -387,7 +426,8 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the ride was found and removed successfully, and false otherwise.
 	 */
 	public static boolean removeRide (final int rideID) {
-		return false;
+		int rowsAffected = runUpdate("DELETE FROM rides WHERE rideID = " + rideID);
+		return (rowsAffected > 0);
 	}
 	private static int getRideId(Ride ride) {
 		int rideID = 0;
@@ -412,7 +452,13 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the ride was found and removed successfully, and false otherwise.
 	 */
 	public static boolean removeRide (final int userID, final Time departure) {
-		return false;
+		List<Car> cars = getCars(userID);
+		int totalRowsAffected = 0;
+		for (Car car : cars) {
+			int rowsAffected = runUpdate("DELETE FROM rides WHERE car = " + getCarID(car) + " AND departure = " + departure);
+			totalRowsAffected += rowsAffected;
+		}
+		return (totalRowsAffected > 0);
 	}
 	/**
 	 * removes the ride from the database whose driver matches the userID field and whose time is
@@ -422,7 +468,20 @@ public abstract class CentralDataStorage {
 	 * false otherwise.
 	 */
 	public static boolean removeNextRide (final int userID) {
-		return false;
+		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
+		if (results == null) {
+			return false;
+		}
+		int rideID = Integer.MAX_VALUE;
+		try {
+			if(results.next()) {
+				rideID = results.getInt("rideID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		int rowsAffected = runUpdate("DELETE FROM rides WHERE rideID = " + rideID);
+		return (rowsAffected > 0);
 	}
 	/**
 	 * adds a request to the database
@@ -448,10 +507,7 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeRequest (final int requestID) {
 		int affectedRows = runUpdate("DELETE FROM requests WHERE requestID = " +  requestID);
-		if (affectedRows > 0) {
-			return true;
-		}
-		return false;
+		return (affectedRows > 0);
 	}
 	/**
 	 * removes a request by the passenger and departure time.
@@ -460,7 +516,13 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the request was found and successfully removed, and false otherwise.
 	 */
 	public static boolean removeRequest (final int userID, final Time departure) {
-		return false;
+		List<Request> requests = getRequests(userID);
+		int totalRowsAffected = 0;
+		for (Request request : requests) {
+			int rowsAffected = runUpdate("DELETE FROM requests WHERE ride = " + getRequestID(request) + " AND departure = " + departure);
+			totalRowsAffected += rowsAffected;
+		}
+		return (totalRowsAffected > 0);
 	}
 	/**
 	 * removes the ride request from the database whose passenger matches the userID field and
@@ -470,16 +532,116 @@ public abstract class CentralDataStorage {
 	 * removed, and false otherwise.
 	 */
 	public static boolean removeNextRequest (final int userID) {
-		return false;
+		int requestID = 0;
+		ResultSet results = runQuery("SELECT requestID FROM requests WHERE ride = (SELECT rideID FROM rides WHERE car = (SELECT carID  FROM cars WHERE driver = " + userID
+				+"))ORDER BY (SELECT departure FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
+				+ ")) ASC LIMIT 1");
+		if (results == null) {
+			return false;
+		}
+		try {
+			if (results.next()) {
+				requestID = results.getInt("requestID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		int rowsAffected = runUpdate("DELETE FROM requests WHERE requestID = " + requestID);
+		return (rowsAffected > 0);
 	}
+	/**
+	 * returns a list of all RequestNotifications encapsulating all notifications in the table, then deletes
+	 * them from the table.
+	 * @return
+	 */
 	public static List<RequestNotification> getRequestNotifications () {
-		return null;
+		ArrayList<RequestNotification> list = new ArrayList<RequestNotification>();
+		ResultSet results = runQuery("SELECT request, notificationType FROM requestNotifications");
+		runUpdate("DELETE FROM requestNotifications WHERE notificationID > 0");
+		if (results == null) {
+			return null;
+		}
+		try {
+			while (results.next()) {
+				list.add(new RequestNotification(
+						results.getInt("request"),
+						results.getString("notificationType").charAt(0)
+						));
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return list;
 	}
+	/**
+	 * returns a list of all RideNotifications encapsulating all notifications in the table, then deletes
+	 * them from the table.
+	 * @return
+	 */
 	public static List<RideNotification> getRideNotifications () {
-		return null;
+		ArrayList<RideNotification> list = new ArrayList<RideNotification>();
+		ResultSet results = runQuery("SELECT ride, notificationType FROM rideNotifications");
+		runUpdate("DELETE FROM rideNotifications WHERE notificationID > 0");
+		if (results == null) {
+			return null;
+		}
+		try {
+			while (results.next()) {
+				list.add(new RideNotification(
+						results.getInt("ride"),
+						results.getString("notificationType").charAt(0)
+						));
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return list;
 	}
+	/**
+	 * returns the ID of the requested Location if it exists in the locations table
+	 * @param location
+	 * @return the id of the Location
+	 */
+	private static int getLocationID (Location location) {
+		ResultSet results = runQuery("SELECT locationID FROM locations WHERE locationName = "
+				+ location.locationName + " and campus = "
+				+ location.campus);
+		if (results == null) {
+			return 0;
+		}
+		int id = 0;
+		try {
+			if (results.next()) {
+				id = results.getInt("locationID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return id;
+	}
+	/**
+	 * returns a Location by its ID
+	 * @param locationID
+	 * @return Location with ID given
+	 */
 	private static Location getLocation (final int locationID) {
-		return null;
+		ResultSet results = runQuery("SELECT locationName, locationAddress, campus FROM locations WHERE locationID = " + locationID);
+		if (results == null) {
+			return null;
+		}
+		Location location = null;
+		try {
+			if (results.next()) {
+				location = new Location(
+						results.getString("locationName"),
+						getAddress(results.getInt("locationAddress")),
+						results.getString("campus")
+						);
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return location;
 	}
 	/**
 	 * runs a query on the MySQL server referenced in PasswordProtector.
