@@ -9,6 +9,9 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.rutgers.cs.scarletTaxi.centralDataStoratge.Car.BodyStyle;
+import edu.rutgers.cs.scarletTaxi.centralDataStoratge.Car.Color;
+
 /**
  * This abstract class provides static methods to retrieve Objects of the User, Car, Ride,
  * and Request classes.  These objects provide access to the stored information of the Central Data
@@ -378,7 +381,43 @@ public abstract class CentralDataStorage {
 	 * @return returns true if the new car was added successfully, and false otherwise.
 	 */
 	public static boolean addCar (final Car newCar) {
-		return false;
+		int rowsAffected = runUpdate(
+				"INSERT INTO cars (driver, make, color, bodyStyle, seats) VALUES (" + getUserID(newCar.driver)
+				+ ", " + newCar.make
+				+ ", " + getColor(newCar.color)
+				+ ", " + getBodyStyle(newCar.bodyStyle)
+				+ ", " + newCar.seats + ")");
+		return (rowsAffected > 0);
+	}
+	private static int getBodyStyle(BodyStyle bodyStyle) {
+		ResultSet results = runQuery("SELECT styleID FROM bodyStyles WHERE styleName = " + bodyStyle);
+		if (results == null) {
+			return 0;
+		}
+		int styleID = 0;
+		try {
+			if (results.next()) {
+				styleID = results.getInt("styleID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return styleID;
+	}
+	private static int getColor(Color color) {
+		ResultSet results = runQuery("SELECT colorID FROM colors WHERE colorName = " + color);
+		if (results == null) {
+			return 0;
+		}
+		int colorID = 0;
+		try {
+			if (results.next()) {
+				colorID = results.getInt("colorID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return colorID;
 	}
 	private static int getCarID (Car car) {
 		int carID= 0;
