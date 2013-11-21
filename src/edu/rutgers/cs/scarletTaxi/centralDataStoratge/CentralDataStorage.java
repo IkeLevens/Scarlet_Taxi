@@ -732,4 +732,44 @@ public abstract class CentralDataStorage {
 			}
 		return 0;
 	}
+	
+	/**
+	 * This method retrieves all users that have a request with the given ride.
+	 * @param rideID
+	 * @return Users who have requests containing a matching rideID.
+	 */
+	public static User[] getUsers (final int rideID) {
+		List<User> users = new ArrayList<User>();
+		User[] usersA=null;
+		User user;
+		ResultSet results = runQuery("SELECT U.userID, U.memberName, U.userName, U.password, U.email, U.address, "
+				+ "U.mobileNumber, U.receiveEmailNotification, U.receiveSMSNotification from users U,requests R"
+				+ "WHERE R.userID = U.userID AND R.rideID = " + rideID);
+		if (results == null) {
+			return null;
+		}
+		try {
+			while (results.next()) {
+				user = new User(
+						results.getInt("userID"),
+						results.getString("memberName"),
+						results.getString("userName"),
+						results.getBytes("password"),
+						results.getString("email"),
+						getAddress(results.getInt("address")),
+						results.getString("mobileNumber"),
+						results.getBoolean("receiveEmailNotification"),
+						results.getBoolean("receiveSMSNotification"));
+				users.add(user);
+			}
+			usersA = new User[users.size()];
+			users.toArray(usersA);
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return usersA;
+	}
 }
+
+
+
