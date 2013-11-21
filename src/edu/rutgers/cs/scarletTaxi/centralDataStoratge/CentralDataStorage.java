@@ -350,10 +350,10 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean modifyUser (final int userID, final User newData) {
 		int rowsAffected = runUpdate("UPDATE users SET memberName=" + newData.name + ", userName="
-	+ newData.username +  ", memberPassword=" + newData.password + ", email=" + newData.email
-	+ ", address=" + getAddressID(newData.address) + ", mobileNumber=" + newData.mobileNumber
-	+ ", receiveEmailNotification=" + newData.receiveEmailNotification + ", receiveSMSNotification="
-	+ newData.receiveSMSNOtification  + " WHERE userID = " + userID);
+				+ newData.username +  ", memberPassword=" + newData.password + ", email=" + newData.email
+				+ ", address=" + getAddressID(newData.address) + ", mobileNumber=" + newData.mobileNumber
+				+ ", receiveEmailNotification=" + newData.receiveEmailNotification + ", receiveSMSNotification="
+				+ newData.receiveSMSNOtification  + " WHERE userID = " + userID);
 		return (rowsAffected > 0);
 	}
 	private static int getAddressID(Address address) {
@@ -534,10 +534,7 @@ public abstract class CentralDataStorage {
 				+ newRequest.passenger + ", "
 				+ ride + ", "
 				+newRequest.comment + ");");
-		if (affectedRows > 0) {
-			return true;
-		}
-		return false;
+		return (affectedRows > 0);
 	}
 	/**
 	 * removes a request from the database by its requestID.
