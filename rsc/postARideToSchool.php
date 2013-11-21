@@ -2,12 +2,20 @@
 
 require_once('../htdocs-include/credentials.php');
 
-$con= mysqli_connect($host, $username, $password, $database);
+$con= mysql_connect($host, $username, $password);
 
 // Check connection
-        if (mysqli_connect_errno($con))
+if (!$con)
   {
-  echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  die('Could not connect: ' . mysql_error());
+  }
+
+
+$db_selected = mysql_select_db($database, $con);
+
+if (!$db_selected)
+  {
+  die ("Can\'t use test_db : " . mysql_error());
   }
 
 $origin = $_POST['pickUpLoc'];
@@ -15,8 +23,10 @@ $destination = $_POST['destAddress'];
 $departure = $_POST['departure'];
 $seatsTaken = $_POST['openSeats'];
 
-mysqli_query($con,"INSERT INTO rides (car, origin, destination, toCampus, departure, seatsTaken)
-VALUES (1, '$origin', '$destination', 1, '$departure', '$seatsTaken')");
+mysql_query("INSERT INTO rides (car, origin, destination, toCampus, departure, seatsTaken)
+VALUES (1, '$origin', '$destination', 1, '$departure', '$seatsTaken')", $con) or die ('Error updating database: '.mysql_error());
 
-        mysqli_close($con);
+echo "Added a new ride to the database.";
+
+mysql_close($con);
 ?>
