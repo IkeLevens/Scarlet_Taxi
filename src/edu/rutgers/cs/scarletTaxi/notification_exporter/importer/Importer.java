@@ -31,7 +31,9 @@ public class Importer {
 	   for(int i=0;i<RideNotifications.size();i++){
 		   RideN = RideNotifications.get(i);
 		   if(RideN != null){
-			   NotificationProcessor.processRideNotification(RideN);
+			   if(NotificationProcessor.processRideNotification(RideN)){
+				   
+			   }
 		   }
 		
 	   }
@@ -40,9 +42,12 @@ public class Importer {
 	   for(int i=0;i<RequestNotifications.size();i++){
 		   RequestN = RequestNotifications.get(i);
 		   if(RequestN != null){
-			   NotificationProcessor.processRequestNotification(RequestN);
+			   if(NotificationProcessor.processRequestNotification(RequestN)){
+				   
+			   }
 		   }
 	   }
 	}
+	
 
 }

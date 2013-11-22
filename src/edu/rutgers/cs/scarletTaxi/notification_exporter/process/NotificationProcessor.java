@@ -81,6 +81,19 @@ public class NotificationProcessor {
 		Ride ride = request.ride;
 		switch (RequestN.notificationType){
 			case 'R':
+				type=NType.NewRequest;
+				recipient = ride.car.driver;
+				rider = request.passenger;
+				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				text = "Scarlet Taxi Notification(New Request):\n" +
+						rider.userID + "has requested a spot in your" + time + " ride to " + ride.destination + ".\n" +
+						"Thank you for using Scarlet Taxi.";
+				//replace user's phone number with a sms email address
+				if(recipient.receiveSMSNOtification==true){
+					recipient.mobileNumber = compileSMSEmail(recipient);
+				}
+				n = new Notification(type,recipient,text);
+				Exporter.exportNotification(n);
 				break;
 			case 'C': //process request cancellation notification
 				type=NType.RequestCancel;
@@ -145,9 +158,9 @@ public class NotificationProcessor {
 		 final String att = "@txt.att.net";
 		 final String tMobile = "@tmomail.net";
 		 final String sprint = "@sprintpcs.com";
-		 char carrier = 'N';
+		 final String vMobile = "@vmobl.com";
 		 String smsEmail = null;
-		 switch (carrier) {
+		 switch (u.carrier) {
 		 	case 'V':
 		 		smsEmail = u.mobileNumber + verizon;
 		 		break;
@@ -160,9 +173,12 @@ public class NotificationProcessor {
 		 	case 'A':
 		 		smsEmail = u.mobileNumber + att;
 		 		break;
+		 	case 'M':
+		 		smsEmail = u.mobileNumber + vMobile;
+		 		break;
 		 	case 'N':
 		 		return null;
-		 }
+		 			 }
 		return smsEmail;
 	}
 }

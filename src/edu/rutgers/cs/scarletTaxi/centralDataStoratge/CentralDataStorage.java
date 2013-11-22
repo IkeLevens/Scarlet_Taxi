@@ -77,7 +77,7 @@ public abstract class CentralDataStorage {
 	public static User getUser (final int userID) {
 		User user = null;
 		ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
-				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification from users"
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users"
 				+ "WHERE userID = " + userID);
 		if (results == null) {
 			return null;
@@ -93,7 +93,8 @@ public abstract class CentralDataStorage {
 						getAddress(results.getInt("address")),
 						results.getString("mobileNumber"),
 						results.getBoolean("receiveEmailNotification"),
-						results.getBoolean("receiveSMSNotification"));
+						results.getBoolean("receiveSMSNotification"),
+						results.getString("carrier").charAt(0));
 			} else {
 				return null;
 			}
@@ -120,7 +121,7 @@ public abstract class CentralDataStorage {
 	public static User getUser (final String userName, final byte[] password) {
 		User user = null;
 		ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
-				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification from users"
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users"
 				+ "WHERE userName = " + userName
 				+ " AND password = " + password);
 		if (results == null) {
@@ -137,7 +138,8 @@ public abstract class CentralDataStorage {
 						getAddress(results.getInt("address")),
 						results.getString("mobileNumber"),
 						results.getBoolean("receiveEmailNotification"),
-						results.getBoolean("receiveSMSNotification"));
+						results.getBoolean("receiveSMSNotification"),
+						results.getString("carrier").charAt(0));
 			} else {
 				return null;
 			}
@@ -686,13 +688,14 @@ public abstract class CentralDataStorage {
 	 */
 	private static ResultSet runQuery (String query) {
 		Connection connection = null;
+		ResultSet result = null;
 		try {
 			connection = DriverManager.getConnection(
 					PasswordProtector.HOST,
 					PasswordProtector.USER,
 					PasswordProtector.PASSWORD);
 			Statement statement = connection.createStatement();
-			ResultSet result = statement.executeQuery(query);
+			result = statement.executeQuery(query);
 			connection.close();
 			} catch (SQLException e) {
 				System.err.println(e.getMessage());
@@ -703,7 +706,7 @@ public abstract class CentralDataStorage {
 					System.err.println(e.getMessage());
 				}
 			}
-		return null;
+		return result;
 	}
 	/**
 	 * updates the MySQL server referenced in PasswordProtector.
@@ -743,7 +746,7 @@ public abstract class CentralDataStorage {
 		User[] usersA=null;
 		User user;
 		ResultSet results = runQuery("SELECT U.userID, U.memberName, U.userName, U.password, U.email, U.address, "
-				+ "U.mobileNumber, U.receiveEmailNotification, U.receiveSMSNotification from users U,requests R"
+				+ "U.mobileNumber, U.receiveEmailNotification, U.receiveSMSNotification, U.carrier from users U,requests R"
 				+ "WHERE R.userID = U.userID AND R.rideID = " + rideID);
 		if (results == null) {
 			return null;
@@ -759,7 +762,8 @@ public abstract class CentralDataStorage {
 						getAddress(results.getInt("address")),
 						results.getString("mobileNumber"),
 						results.getBoolean("receiveEmailNotification"),
-						results.getBoolean("receiveSMSNotification"));
+						results.getBoolean("receiveSMSNotification"),
+						results.getString("carrier").charAt(0));
 				users.add(user);
 			}
 			usersA = new User[users.size()];
