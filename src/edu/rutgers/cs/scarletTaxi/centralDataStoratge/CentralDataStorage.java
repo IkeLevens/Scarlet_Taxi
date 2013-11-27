@@ -21,11 +21,22 @@ import edu.rutgers.cs.scarletTaxi.centralDataStoratge.Car.Color;
  *
  */
 public abstract class CentralDataStorage {
+	
+	private static Connection connection;
+	
+	/**
+	 * Retrieves an Address object for a given addressID.
+	 * @param addressID
+	 * @return An Address object encapsulating the data from the record with the given ID.11
+	 */
 	public static Address getAddress(int addressID) {
 		Address address = null;
 		ResultSet results = runQuery("SELECT streedAddress, city, zipCode FROM addresses WHERE "
 				+ "addressID= " + addressID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -35,10 +46,16 @@ public abstract class CentralDataStorage {
 						results.getString("city"),
 						results.getInt("zipCode"));
 			} else {
+				if (connection != null) {
+					closeConnection();
+				}
 				return null;
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return address;
 	}
@@ -56,16 +73,25 @@ public abstract class CentralDataStorage {
 				+ username + "\" AND email = \""
 				+ email + "\";");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return -1;
 		}
 		try {
 			if(results.next()) {
 				userID = results.getInt("userID");
 			} else {
+				if (connection != null) {
+					closeConnection();
+				}
 				return -1;
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return userID;
 	}
@@ -80,6 +106,9 @@ public abstract class CentralDataStorage {
 				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users"
 				+ "WHERE userID = " + userID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -96,10 +125,16 @@ public abstract class CentralDataStorage {
 						results.getBoolean("receiveSMSNotification"),
 						results.getString("carrier").charAt(0));
 			} else {
+				if (connection != null) {
+					closeConnection();
+				}
 				return null;
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return user;
 	}
@@ -125,6 +160,9 @@ public abstract class CentralDataStorage {
 				+ "WHERE userName = " + userName
 				+ " AND password = " + password);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -141,10 +179,16 @@ public abstract class CentralDataStorage {
 						results.getBoolean("receiveSMSNotification"),
 						results.getString("carrier").charAt(0));
 			} else {
+				if (connection != null) {
+					closeConnection();
+				}
 				return null;
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return user;
 	}
@@ -157,6 +201,9 @@ public abstract class CentralDataStorage {
 		Request request = null;
 		ResultSet results = runQuery("SELECT requestingUser, ride, sent, requestComment FROM requests WHERE requestID = " + requestID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -169,10 +216,16 @@ public abstract class CentralDataStorage {
 						results.getTime("sent"),
 						results.getString("requestComment"));
 			} else {
+				if (connection != null) {
+					closeConnection();
+				}
 				return null;
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return request;
 	}
@@ -180,6 +233,9 @@ public abstract class CentralDataStorage {
 		ResultSet results = runQuery("SELECT requestID FROM requests WHERE requestingUser = " + request.passenger + " AND ride = " + getRideId(request.ride));
 		int id = 0;
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		try {
@@ -188,6 +244,9 @@ public abstract class CentralDataStorage {
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return id;
 	}
@@ -200,6 +259,9 @@ public abstract class CentralDataStorage {
 	public static List<Request> getRequests (final int userID) {
 		ResultSet requestIDs = runQuery("SELECT requestID from requests WHERE requestingUser = " + userID);
 		if (requestIDs == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		ArrayList<Request> requests = new ArrayList<Request>();
@@ -210,6 +272,9 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return requests;
 	}
@@ -222,6 +287,9 @@ public abstract class CentralDataStorage {
 	public static Ride getRide (final int rideID) {
 		ResultSet results = runQuery("SELECT car, origin, destination, toCampus, departure, seatsTaken from rides WHERE rideID = "+ rideID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		Ride ride = null;
@@ -239,10 +307,16 @@ public abstract class CentralDataStorage {
 						results.getInt("seatsTaken")
 				);
 			} else {
+				if (connection != null) {
+					closeConnection();
+				}
 				return null;
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return ride;
 	}
@@ -259,8 +333,10 @@ public abstract class CentralDataStorage {
 		}
 		ArrayList<Ride> rides = new ArrayList<Ride>();
 		try {
+			boolean connectionOpen = false;
 			while (cars.next()) {
-				ResultSet rideIDs = runQuery("SELECT rideID from rides WHERE car = " + cars.getInt("carID"));
+				ResultSet rideIDs = runQuery("SELECT rideID from rides WHERE car = " + cars.getInt("carID"), connectionOpen);
+				connectionOpen = true;
 				if (rideIDs == null) {
 					continue;
 				}
@@ -271,11 +347,17 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println (e.getMessage());
 		}
+		if (connection != null) {
+			closeConnection();
+		}
 		return rides;
 	}
 	private static Car getCar (final int carID){
 		ResultSet results = runQuery("SELECT driver, make, bodyStyle, color, seats FROM cars WHERE carID = " + carID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		Car car = null;
@@ -291,6 +373,9 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+		if (connection != null) {
+			closeConnection();
+		}
 		return car;
 	}
 	/**
@@ -302,6 +387,9 @@ public abstract class CentralDataStorage {
 	public static List<Car> getCars(final int userID){
 		ResultSet carIDs = runQuery("SELECT carID FROM cars WHERE driver = " + userID);
 		if (carIDs == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		ArrayList<Car> cars = new ArrayList<Car>();
@@ -312,6 +400,9 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return cars;
 	}
@@ -365,6 +456,9 @@ public abstract class CentralDataStorage {
 				+ " and zipCode = " + address.zipCode
 		);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		try {
@@ -373,6 +467,9 @@ public abstract class CentralDataStorage {
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return id;
 	}
@@ -394,6 +491,9 @@ public abstract class CentralDataStorage {
 	private static int getBodyStyle(BodyStyle bodyStyle) {
 		ResultSet results = runQuery("SELECT styleID FROM bodyStyles WHERE styleName = " + bodyStyle);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		int styleID = 0;
@@ -404,11 +504,17 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+		if (connection != null) {
+			closeConnection();
+		}
 		return styleID;
 	}
 	private static int getColor(Color color) {
 		ResultSet results = runQuery("SELECT colorID FROM colors WHERE colorName = " + color);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		int colorID = 0;
@@ -419,6 +525,9 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+		if (connection != null) {
+			closeConnection();
+		}
 		return colorID;
 	}
 	private static int getCarID (Car car) {
@@ -427,12 +536,18 @@ public abstract class CentralDataStorage {
 				+ car.driver.userID + " AND make = \""
 				+ car.make + "\";");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		try {
 			carID = results.getInt("carID");
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return carID;
 	}
@@ -477,12 +592,18 @@ public abstract class CentralDataStorage {
 				+ car + " AND departure = "
 				+ ride.departure + ";");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		try {
 			rideID = results.getInt("rideID");
 		} catch (SQLException e){
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return rideID;
 	}
@@ -511,6 +632,9 @@ public abstract class CentralDataStorage {
 	public static boolean removeNextRide (final int userID) {
 		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return false;
 		}
 		int rideID = Integer.MAX_VALUE;
@@ -522,6 +646,9 @@ public abstract class CentralDataStorage {
 			System.err.println(e.getMessage());
 		}
 		int rowsAffected = runUpdate("DELETE FROM rides WHERE rideID = " + rideID);
+		if (connection != null) {
+			closeConnection();
+		}
 		return (rowsAffected > 0);
 	}
 	/**
@@ -575,6 +702,9 @@ public abstract class CentralDataStorage {
 				+"))ORDER BY (SELECT departure FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
 				+ ")) ASC LIMIT 1");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return false;
 		}
 		try {
@@ -585,6 +715,9 @@ public abstract class CentralDataStorage {
 			System.err.println(e.getMessage());
 		}
 		int rowsAffected = runUpdate("DELETE FROM requests WHERE requestID = " + requestID);
+		if (connection != null) {
+			closeConnection();
+		}
 		return (rowsAffected > 0);
 	}
 	/**
@@ -597,6 +730,9 @@ public abstract class CentralDataStorage {
 		ResultSet results = runQuery("SELECT request, notificationType FROM requestNotifications");
 		runUpdate("DELETE FROM requestNotifications WHERE notificationID > 0");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -608,6 +744,9 @@ public abstract class CentralDataStorage {
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return list;
 	}
@@ -621,6 +760,9 @@ public abstract class CentralDataStorage {
 		ResultSet results = runQuery("SELECT ride, notificationType FROM rideNotifications");
 		runUpdate("DELETE FROM rideNotifications WHERE notificationID > 0");
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -632,6 +774,9 @@ public abstract class CentralDataStorage {
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return list;
 	}
@@ -645,6 +790,9 @@ public abstract class CentralDataStorage {
 				+ location.locationName + " and campus = "
 				+ location.campus);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return 0;
 		}
 		int id = 0;
@@ -654,6 +802,9 @@ public abstract class CentralDataStorage {
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
 		}
 		return id;
 	}
@@ -665,6 +816,9 @@ public abstract class CentralDataStorage {
 	private static Location getLocation (final int locationID) {
 		ResultSet results = runQuery("SELECT locationName, locationAddress, campus FROM locations WHERE locationID = " + locationID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		Location location = null;
@@ -679,6 +833,9 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+		if (connection != null) {
+			closeConnection();
+		}
 		return location;
 	}
 	/**
@@ -687,7 +844,6 @@ public abstract class CentralDataStorage {
 	 * @return The results of the query, or null in the case of a SQLException being thrown.
 	 */
 	private static ResultSet runQuery (String query) {
-		Connection connection = null;
 		ResultSet result = null;
 		try {
 			connection = DriverManager.getConnection(
@@ -699,14 +855,38 @@ public abstract class CentralDataStorage {
 			connection.close();
 			} catch (SQLException e) {
 				System.err.println(e.getMessage());
-			} finally {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					System.err.println(e.getMessage());
-				}
 			}
 		return result;
+	}
+	/**
+	 * runs a query on the MySQL server referenced in PasswordProtector.
+	 * @param query The query to be run, in string form.
+	 * @return The results of the query, or null in the case of a SQLException being thrown.
+	 */
+	private static ResultSet runQuery (String query, boolean connectionOpen) {
+		ResultSet result = null;
+		try {
+			if (!connectionOpen) {
+				connection = DriverManager.getConnection(
+						PasswordProtector.HOST,
+						PasswordProtector.USER,
+						PasswordProtector.PASSWORD);
+			}
+			Statement statement = connection.createStatement();
+			result = statement.executeQuery(query);
+			connection.close();
+			} catch (SQLException e) {
+				System.err.println(e.getMessage());
+			}
+		return result;
+	}
+	private static void closeConnection () {
+		try {
+			connection.close();
+			connection = null;
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
 	}
 	/**
 	 * updates the MySQL server referenced in PasswordProtector.
