@@ -15,7 +15,7 @@ public class Location {
 	}
 	public String locationName;
 	public Address locationAddress;
-	public Campus campus;
+	public String campus;
 	
 	/**
 	 * This constructor creates a Location with all fields specified at the time of construction.
@@ -23,7 +23,7 @@ public class Location {
 	 * @param address
 	 * @param campus
 	 */
-	public Location (final String name, final Address address, final Campus campus) {
+	public Location (final String name, final Address address, final String campus) {
 		this.locationName = name;
 		this.locationAddress = address;
 		this.campus = campus;

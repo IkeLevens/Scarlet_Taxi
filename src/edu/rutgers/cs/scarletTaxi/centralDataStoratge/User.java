@@ -30,7 +30,7 @@ public class User {
 	 */
 	public User (final int userID, final String name, final String username, final byte[] password,
 			final String email, final Address address, final String mobileNumber,
-			final boolean emailNotification, final boolean SMSNoticication) {
+			final boolean emailNotification, final boolean SMSNotification) {
 		this.userID = userID;
 		this.name = name;
 		this.username = username;
