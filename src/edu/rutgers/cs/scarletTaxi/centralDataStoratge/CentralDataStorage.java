@@ -362,14 +362,16 @@ public abstract class CentralDataStorage {
 		}
 		Car car = null;
 		try {
-			User driver = getUser(results.getInt("driver"));
-			car = new Car(
-					driver,
-					results.getString("make"),
-					Car.getBodyStyle(results.getInt("bodyStyle")),
-					Car.getColor(results.getInt("color")),
-					results.getInt("seats")
-			);
+			if (results.next()) {
+				User driver = getUser(results.getInt("driver"));
+				car = new Car(
+						driver,
+						results.getString("make"),
+						Car.getBodyStyle(results.getInt("bodyStyle")),
+						Car.getColor(results.getInt("color")),
+						results.getInt("seats")
+				);
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -542,7 +544,9 @@ public abstract class CentralDataStorage {
 			return 0;
 		}
 		try {
-			carID = results.getInt("carID");
+			if (results.next()){
+				carID = results.getInt("carID");
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -598,7 +602,9 @@ public abstract class CentralDataStorage {
 			return 0;
 		}
 		try {
-			rideID = results.getInt("rideID");
+			if (results.next()) {
+				rideID = results.getInt("rideID");
+			}
 		} catch (SQLException e){
 			System.err.println(e.getMessage());
 		}
@@ -929,6 +935,9 @@ public abstract class CentralDataStorage {
 				+ "U.mobileNumber, U.receiveEmailNotification, U.receiveSMSNotification, U.carrier from users U,requests R"
 				+ "WHERE R.userID = U.userID AND R.rideID = " + rideID);
 		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
 			return null;
 		}
 		try {
@@ -951,9 +960,9 @@ public abstract class CentralDataStorage {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+		if (connection != null) {
+			closeConnection();
+		}
 		return usersA;
 	}
 }
-
-
-
