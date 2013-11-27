@@ -15,6 +15,7 @@ public class User {
 	public String mobileNumber;
 	public boolean receiveEmailNotification;
 	public boolean receiveSMSNOtification;
+	public char carrier;
 	
 	/**
 	 * This constructor creates a User with all fields specified at the time of constuction.
@@ -30,7 +31,7 @@ public class User {
 	 */
 	public User (final int userID, final String name, final String username, final byte[] password,
 			final String email, final Address address, final String mobileNumber,
-			final boolean emailNotification, final boolean SMSNotification) {
+			final boolean emailNotification, final boolean SMSNotification, final char carrier) {
 		this.userID = userID;
 		this.name = name;
 		this.username = username;
@@ -40,6 +41,7 @@ public class User {
 		this.mobileNumber = mobileNumber;
 		this.receiveEmailNotification = emailNotification;
 		this.receiveSMSNOtification = SMSNotification;
+		this.carrier = carrier;
 	}
 	/**
 	 * returns a string representation of this User.
