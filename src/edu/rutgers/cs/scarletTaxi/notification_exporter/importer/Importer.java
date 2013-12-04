@@ -14,36 +14,32 @@ import edu.rutgers.cs.scarletTaxi.notification_exporter.process.NotificationProc
 
 public class Importer implements Runnable{
 
+	private List<RideNotification> rideNotifications=null;
+	private List<RequestNotification> requestNotifications=null;
 	private boolean running = true;
 	public static final int INTERVAL = 900000; //The standard sleep interval for this is 15 minutes
 	// (900,000 ms)
 	
 	public void run() {
 		while (running) {
-			List<RideNotification> RideNotifications=null;
-			List<RequestNotification> RequestNotifications=null;
-			RideNotification RideN = null;
-			RequestNotification RequestN = null;
-			RideNotifications = CentralDataStorage.getRideNotifications();
-			RequestNotifications = CentralDataStorage.getRequestNotifications();
+			this.rideNotifications = CentralDataStorage.getRideNotifications();
+			this.requestNotifications = CentralDataStorage.getRequestNotifications();
 			
 			//Send all pending ride notifications one by one to the processor
-		   for(int i=0;i<RideNotifications.size();i++){
-			   RideN = RideNotifications.get(i);
-			   if(RideN != null){
-				   if(NotificationProcessor.processRideNotification(RideN)){
-					   
+		   for(RideNotification rideN : this.rideNotifications){
+			   if(rideN != null){
+				   if(NotificationProcessor.processRideNotification(rideN)){
+					   // is there meant to be code here?
 				   }
 			   }
 			
 		   }
 		   
 		   //Send all pending request notifications one by one to the processor
-		   for(int i=0;i<RequestNotifications.size();i++){
-			   RequestN = RequestNotifications.get(i);
-			   if(RequestN != null){
-				   if(NotificationProcessor.processRequestNotification(RequestN)){
-					   
+		   for(RequestNotification requestN : this.requestNotifications) {
+			   if(requestN != null){
+				   if(NotificationProcessor.processRequestNotification(requestN)){
+					   // is there meant to be code here?
 				   }
 			   }
 		   }
