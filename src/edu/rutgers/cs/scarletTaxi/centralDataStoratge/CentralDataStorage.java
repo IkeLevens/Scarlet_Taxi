@@ -2,6 +2,7 @@ package edu.rutgers.cs.scarletTaxi.centralDataStoratge;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -31,7 +32,7 @@ public abstract class CentralDataStorage {
 	 */
 	public static Address getAddress(int addressID) {
 		Address address = null;
-		ResultSet results = runQuery("SELECT streedAddress, city, zipCode FROM addresses WHERE "
+		ResultSet results = runQuery("SELECT streetAddress, city, zipCode FROM addresses WHERE "
 				+ "addressID= " + addressID);
 		if (results == null) {
 			if (connection != null) {
@@ -102,8 +103,8 @@ public abstract class CentralDataStorage {
 	 */
 	public static User getUser (final int userID) {
 		User user = null;
-		ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
-				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users"
+		ResultSet results = runQuery("SELECT userID, memberName, userName, memberPassword, email, address, "
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users "
 				+ "WHERE userID = " + userID);
 		if (results == null) {
 			if (connection != null) {
@@ -117,7 +118,7 @@ public abstract class CentralDataStorage {
 						results.getInt("userID"),
 						results.getString("memberName"),
 						results.getString("userName"),
-						results.getBytes("password"),
+						results.getBytes("memberPassword"),
 						results.getString("email"),
 						getAddress(results.getInt("address")),
 						results.getString("mobileNumber"),
@@ -156,7 +157,7 @@ public abstract class CentralDataStorage {
 	public static User getUser (final String userName, final byte[] password) {
 		User user = null;
 		ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
-				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users"
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users "
 				+ "WHERE userName = " + userName
 				+ " AND password = " + password);
 		if (results == null) {
@@ -285,7 +286,7 @@ public abstract class CentralDataStorage {
 	 * checked for null!
 	 */
 	public static Ride getRide (final int rideID) {
-		ResultSet results = runQuery("SELECT car, origin, destination, toCampus, departure, seatsTaken from rides WHERE rideID = "+ rideID);
+		ResultSet results = runQuery("SELECT car, origin, destination, toCampus, departure, availableSeats FROM rides WHERE rideID = " + rideID);
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -304,7 +305,7 @@ public abstract class CentralDataStorage {
 						destination,
 						results.getBoolean("toCampus"),
 						results.getTime("departure"),
-						results.getInt("seatsTaken")
+						results.getInt("availableSeats")
 				);
 			} else {
 				if (connection != null) {
@@ -734,7 +735,7 @@ public abstract class CentralDataStorage {
 	public static List<RequestNotification> getRequestNotifications () {
 		ArrayList<RequestNotification> list = new ArrayList<RequestNotification>();
 		ResultSet results = runQuery("SELECT request, notificationType FROM requestNotifications");
-		runUpdate("DELETE FROM requestNotifications WHERE notificationID > 0");
+		//runUpdate("DELETE FROM requestNotifications WHERE notificationID > 0");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -858,7 +859,7 @@ public abstract class CentralDataStorage {
 					PasswordProtector.PASSWORD);
 			Statement statement = connection.createStatement();
 			result = statement.executeQuery(query);
-			connection.close();
+			//connection.close();
 			} catch (SQLException e) {
 				System.err.println(e.getMessage());
 			}
@@ -880,7 +881,7 @@ public abstract class CentralDataStorage {
 			}
 			Statement statement = connection.createStatement();
 			result = statement.executeQuery(query);
-			connection.close();
+			//connection.close();
 			} catch (SQLException e) {
 				System.err.println(e.getMessage());
 			}
@@ -931,9 +932,28 @@ public abstract class CentralDataStorage {
 		List<User> users = new ArrayList<User>();
 		User[] usersA=null;
 		User user;
-		ResultSet results = runQuery("SELECT U.userID, U.memberName, U.userName, U.password, U.email, U.address, "
-				+ "U.mobileNumber, U.receiveEmailNotification, U.receiveSMSNotification, U.carrier from users U,requests R"
-				+ "WHERE R.userID = U.userID AND R.rideID = " + rideID);
+		//ResultSet results = runQuery("SELECT userID, memberName, userName, password, email, address, "
+		//		+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users,requests"
+		//		+ "WHERE requestingUser = userID AND rideID = " + rideID);
+		ResultSet results = null;
+		PreparedStatement ps=null;
+		try {
+			String query = "SELECT userID, memberName, userName, memberPassword, email, address, "
+					+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users,requests "
+					+ "WHERE requestingUser = userID AND ride = ?";
+			connection = DriverManager.getConnection(
+					PasswordProtector.HOST,
+					PasswordProtector.USER,
+					PasswordProtector.PASSWORD);
+			//Statement statement = connection.createStatement();
+			ps = connection.prepareStatement(query);
+			ps.setInt(1, rideID);
+			results = ps.executeQuery();
+			//result = statement.executeQuery(query);
+			//connection.close();
+			} catch (SQLException e) {
+				System.err.println(e.getMessage());
+			}
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -946,7 +966,7 @@ public abstract class CentralDataStorage {
 						results.getInt("userID"),
 						results.getString("memberName"),
 						results.getString("userName"),
-						results.getBytes("password"),
+						results.getBytes("memberPassword"),
 						results.getString("email"),
 						getAddress(results.getInt("address")),
 						results.getString("mobileNumber"),

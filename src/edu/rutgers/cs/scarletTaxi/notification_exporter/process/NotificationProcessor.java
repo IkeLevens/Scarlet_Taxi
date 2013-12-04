@@ -31,9 +31,9 @@ public class NotificationProcessor {
 			case 'C': //process ride cancellation notification
 				type=NType.RideCancel;
 				recipients = CentralDataStorage.getUsers(RideN.rideID);
-				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Ride Cancellation):\n" +
-						driver.username + "has canceled the " + time + " ride to " + ride.destination + "!\n" +
+						driver.username + " has canceled the " + time + " ride to " + ride.destination.locationName + "!\n" +
 								"Please check the rides list for available rides that fit your neccessary criteria, or plan" +
 								"alternate travel accomodations. We apologize for any inconvenience, and thank you for using" +
 								"Scarlet Taxi.";
@@ -48,10 +48,10 @@ public class NotificationProcessor {
 				type=NType.TimeReminder;
 				recipients = CentralDataStorage.getUsers(RideN.rideID);
 				long difference = ride.departure.getTime() - Calendar.getInstance().getTimeInMillis();
-				int mins  = (int)Math.round((difference*(1.66667*(10^-5))));
-				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				int mins  = (int)Math.round((difference/60000));
+				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Pickup Time Reminder):\n" +
-						"Your pickup for the " + time + " ride to " + ride.destination + "will be arriving in" +
+						"Your pickup for the " + time + " ride to " + ride.destination.locationName + "will be arriving in" +
 						mins + "minutes!"
 						+"Thank you for using Scarlet Taxi.";
 				//replace the user's phone number with an sms email for each of the notification recipients
@@ -84,9 +84,9 @@ public class NotificationProcessor {
 				type=NType.NewRequest;
 				recipient = ride.car.driver;
 				rider = request.passenger;
-				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(New Request):\n" +
-						rider.userID + "has requested a spot in your" + time + " ride to " + ride.destination + ".\n" +
+						rider.username + " has requested a spot in your " + time + " ride to " + ride.destination.locationName + ".\n" +
 						"Thank you for using Scarlet Taxi.";
 				//replace user's phone number with a sms email address
 				if(recipient.receiveSMSNOtification==true){
@@ -99,9 +99,9 @@ public class NotificationProcessor {
 				type=NType.RequestCancel;
 				recipient = ride.car.driver;
 				rider = request.passenger;
-				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Request Cancellation):\n" +
-						rider.userID + "has cancelled his/her request for a spot in your" + time + " ride to " + ride.destination + ".\n" +
+						rider.username + " has cancelled his/her request for a spot in your " + time + " ride to " + ride.destination.locationName + ".\n" +
 						"Thank you for using Scarlet Taxi.";
 				//replace user's phone number with a sms email address
 				if(recipient.receiveSMSNOtification==true){
@@ -114,9 +114,9 @@ public class NotificationProcessor {
 				type=NType.RequestApproval;
 				recipient=request.passenger;
 				driver = ride.car.driver;
-				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Request Approval):\n" +
-						driver.username + "has approved your request for a spot in his/her" + time + " ride to " + ride.destination + "!\n" +
+						driver.username + " has approved your request for a spot in his/her " + time + " ride to " + ride.destination.locationName + "!\n" +
 						"Thank you for using Scarlet Taxi.";
 				//replace user's phone number with a sms email address
 				if(recipient.receiveSMSNOtification==true){
@@ -129,9 +129,9 @@ public class NotificationProcessor {
 				type=NType.RequestDenial;
 				recipient=request.passenger;
 				driver = ride.car.driver;
-				time = new SimpleDateFormat("MM/dd/yyyy").format(ride.departure);
+				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Request Approval):\n" +
-						"Sorry, but" + driver.username + "has denied your request for a spot in his/her" + time + " ride to " + ride.destination + ".\n" +
+						"Sorry, but " + driver.username + " has denied your request for a spot in his/her " + time + " ride to " + ride.destination.locationName + ".\n" +
 						"Thank you for using Scarlet Taxi.";
 				//replace user's phone number with a sms email address
 				if(recipient.receiveSMSNOtification==true){
