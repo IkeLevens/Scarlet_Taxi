@@ -735,7 +735,7 @@ public abstract class CentralDataStorage {
 	public static List<RequestNotification> getRequestNotifications () {
 		ArrayList<RequestNotification> list = new ArrayList<RequestNotification>();
 		ResultSet results = runQuery("SELECT request, notificationType FROM requestNotifications");
-		//runUpdate("DELETE FROM requestNotifications WHERE notificationID > 0");
+		runUpdate("DELETE FROM requestNotifications WHERE notificationID > 0");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();

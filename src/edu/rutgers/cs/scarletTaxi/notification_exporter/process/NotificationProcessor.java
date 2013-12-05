@@ -2,6 +2,7 @@ package edu.rutgers.cs.scarletTaxi.notification_exporter.process;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.CentralDataStorage;
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.Request;
@@ -47,12 +48,12 @@ public class NotificationProcessor {
 			case 'T': //process pickup time reminder notification
 				type=NType.TimeReminder;
 				recipients = CentralDataStorage.getUsers(RideN.rideID);
-				long difference = ride.departure.getTime() - Calendar.getInstance().getTimeInMillis();
-				int mins  = (int)Math.round((difference/60000));
+				TimeZone tz = TimeZone.getTimeZone("America/New_York");
+				long mins = (Math.abs(ride.departure.getHours() - (Calendar.getInstance(tz).HOUR_OF_DAY+3))*60) + Math.abs(ride.departure.getMinutes() - Calendar.getInstance(tz).MINUTE);
 				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Pickup Time Reminder):\n" +
-						"Your pickup for the " + time + " ride to " + ride.destination.locationName + "will be arriving in" +
-						mins + "minutes!"
+						"Your pickup for the " + time + " ride to " + ride.destination.locationName + " will be arriving in " +
+						mins + " minutes!"
 						+"Thank you for using Scarlet Taxi.";
 				//replace the user's phone number with an sms email for each of the notification recipients
 				for(int i=0;i<recipients.length;i++){
