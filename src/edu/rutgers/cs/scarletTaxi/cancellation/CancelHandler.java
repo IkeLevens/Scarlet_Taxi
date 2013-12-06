@@ -18,7 +18,7 @@ import com.sun.mail.imap.*;
  * are present in the email, the origin address will be used to determine the driver or passenger
  * who sent the command.
  * @author Isaac Yochelson
- *
+ * @author Mike Wasserman
  */
 public class CancelHandler implements Runnable {
 	private String host;
