@@ -636,13 +636,13 @@ public abstract class CentralDataStorage {
 	 * @return returns true if a future ride for the user was found and removed successfully, and
 	 * false otherwise.
 	 */
-	public static boolean removeNextRide (final int userID) {
+	public static int removeNextRide (final int userID) {
 		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
 			}
-			return false;
+			return 0;
 		}
 		int rideID = Integer.MAX_VALUE;
 		try {
@@ -656,7 +656,7 @@ public abstract class CentralDataStorage {
 		if (connection != null) {
 			closeConnection();
 		}
-		return (rowsAffected > 0);
+		return rideID;
 	}
 	/**
 	 * adds a request to the database
@@ -985,4 +985,52 @@ public abstract class CentralDataStorage {
 		}
 		return usersA;
 	}
+	
+	
+	
+	/**
+	 * This method retrieves a user by userID.
+	 * @param number
+	 * @return The User, if any, matching the mobile phone number.  This must be tested for null!
+	 */
+	public static User getUserByPhone (final int number) {
+		User user = null;
+		ResultSet results = runQuery("SELECT userID, memberName, userName, memberPassword, email, address, "
+				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users "
+				+ "WHERE mobileNumber = " + number);
+		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
+			return null;
+		}
+		try {
+			if (results.next()) {
+				user = new User(
+						results.getInt("userID"),
+						results.getString("memberName"),
+						results.getString("userName"),
+						results.getBytes("memberPassword"),
+						results.getString("email"),
+						getAddress(results.getInt("address")),
+						results.getString("mobileNumber"),
+						results.getBoolean("receiveEmailNotification"),
+						results.getBoolean("receiveSMSNotification"),
+						results.getString("carrier").charAt(0));
+			} else {
+				if (connection != null) {
+					closeConnection();
+				}
+				return null;
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
+		}
+		return user;
+	}
+	
+	
 }
