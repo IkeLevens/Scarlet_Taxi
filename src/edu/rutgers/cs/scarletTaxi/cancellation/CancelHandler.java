@@ -1,8 +1,12 @@
 package edu.rutgers.cs.scarletTaxi.cancellation;
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.*;
+import edu.rutgers.cs.scarletTaxi.notification_exporter.importer.Importer;
+import edu.rutgers.cs.scarletTaxi.notification_exporter.process.NotificationProcessor;
+
 import java.util.*;
 import java.io.*;
 import javax.mail.*;
+import javax.mail.Address;
 import javax.mail.event.*;
 import javax.activation.*;
 
@@ -16,7 +20,7 @@ import com.sun.mail.imap.*;
  * @author Isaac Yochelson
  *
  */
-public class CancelHandler {
+public class CancelHandler implements Runnable {
 	private String host;
 	private String user;
 	private String password;
@@ -39,7 +43,6 @@ public class CancelHandler {
 		this.password = password;
 		this.mailbox = mailbox;
 		this.interval = interval;
-		checkMessageLoop();
 	}
 	private boolean running = true;
 	/**
@@ -49,6 +52,22 @@ public class CancelHandler {
 	 */
 	private void parseMail(Message msg) {
 		// handle Message msg.
+		
+		try {
+			String message = msg.toString();
+			String From = msg.getFrom().toString();
+			if(message.contains("cancel")||message.contains("Cancel")||message.contains("CANCEL")){
+				String[] parts = From.split("@.");
+				int number = Integer.parseInt(parts[0]);
+				User driver = CentralDataStorage.getUserByPhone(number);
+				int rideID = CentralDataStorage.removeNextRide(driver.userID);
+				RideNotification rn = new RideNotification(rideID,'C');
+				NotificationProcessor.processRideNotification(rn);
+			}
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	/**
 	 * in this loop, the server will periodically querry the mail server for new incoming email.
@@ -107,8 +126,11 @@ public class CancelHandler {
 				    f.idle();
 				    System.out.println("IDLE done");
 				} else {
+					try{
 				    Thread.sleep(this.interval); // sleep for freq milliseconds
-		
+					}catch(InterruptedException e){
+						running=false;
+					}
 				    // This is to force the IMAP server to send us
 				    // EXISTS notifications. 
 				    folder.getMessageCount();
@@ -125,5 +147,10 @@ public class CancelHandler {
 	 */
 	public void stopChecking() {
 		this.running = false;
+	}
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		checkMessageLoop();
 	}
 }
