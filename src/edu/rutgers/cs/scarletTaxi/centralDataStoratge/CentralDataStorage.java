@@ -270,7 +270,6 @@ public abstract class CentralDataStorage {
 				requests.add(getRequest(requestIDs.getInt("requestID")));
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (connection != null) {
@@ -400,7 +399,6 @@ public abstract class CentralDataStorage {
 				cars.add(getCar(carIDs.getInt("carID")));
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (connection != null) {
