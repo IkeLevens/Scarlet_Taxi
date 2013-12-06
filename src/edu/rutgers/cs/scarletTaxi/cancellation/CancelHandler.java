@@ -52,7 +52,7 @@ public class CancelHandler implements Runnable {
 	 */
 	private void parseMail(Message msg) {
 		// handle Message msg.
-		
+		System.out.println("in ParseMail: msg = " + msg);
 		try {
 			String message = msg.toString();
 			String From = msg.getFrom().toString();
@@ -76,13 +76,14 @@ public class CancelHandler implements Runnable {
 	 */
 	private void checkMessageLoop() {try {
 	    Properties props = System.getProperties();
+	    props.setProperty("mail.store.protocol", "imaps");
 
 	    // Get a Session object
-	    Session session = Session.getInstance(props, null);
-	    // session.setDebug(true);
+	    Session session = Session.getDefaultInstance(props, null);
+	    session.setDebug(true);
 
 	    // Get a Store object
-	    Store store = session.getStore("imap");
+	    Store store = session.getStore("imaps");
 
 	    // Connect
 	    store.connect(this.host, this.user, this.password);
