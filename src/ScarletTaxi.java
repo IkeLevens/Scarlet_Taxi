@@ -10,7 +10,7 @@ import edu.rutgers.cs.scarletTaxi.notification_exporter.importer.Importer;
 public class ScarletTaxi {
 	public static void main (String[] argv) {
 		Importer importer = new Importer();
-		CancelHandler cancelH = new CancelHandler("imap.gmail.com","scarlettaxicancellation","cs431group5","[Gmail]/All Mail",900000);
+		CancelHandler cancelH = new CancelHandler("imap.gmail.com","scarlettaxicancellation@gmail.com","cs431group5","[Gmail]/All Mail",900000);
 		Thread importerThread = new Thread(importer);
 		Thread cancelThread = new Thread(cancelH);
 		cancelThread.start();
@@ -18,7 +18,6 @@ public class ScarletTaxi {
 		//add more thread starts here
 		try {
 			importerThread.join();
-			//cancelThread.join();
 		} catch (InterruptedException e) {
 			importerThread.interrupt();
 			cancelThread.interrupt();

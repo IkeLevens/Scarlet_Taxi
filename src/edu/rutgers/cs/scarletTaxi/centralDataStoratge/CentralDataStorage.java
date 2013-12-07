@@ -231,7 +231,7 @@ public abstract class CentralDataStorage {
 		return request;
 	}
 	private static int getRequestID (final Request request) {
-		ResultSet results = runQuery("SELECT requestID FROM requests WHERE requestingUser = " + request.passenger + " AND ride = " + getRideId(request.ride));
+		ResultSet results = runQuery("SELECT requestID FROM requests WHERE requestingUser = " + request.passenger.userID + " AND ride = " + getRideId(request.ride));
 		int id = 0;
 		if (results == null) {
 			if (connection != null) {
@@ -242,6 +242,29 @@ public abstract class CentralDataStorage {
 		try {
 			if (results.next()) {
 				id = results.getInt("requestID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		if (connection != null) {
+			closeConnection();
+		}
+		return id;
+	}
+	private static int getRideID (final Ride ride) {
+		
+		ResultSet results = runQuery("SELECT rideID FROM rides WHERE origin = " + getLocationID(ride.origin) +
+						" AND car = " + getCarID(ride.car));
+		int id = 0;
+		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
+			return 0;
+		}
+		try {
+			if (results.next()) {
+				id = results.getInt("rideID");
 			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
@@ -271,6 +294,7 @@ public abstract class CentralDataStorage {
 				requests.add(getRequest(requestIDs.getInt("requestID")));
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (connection != null) {
@@ -400,6 +424,7 @@ public abstract class CentralDataStorage {
 				cars.add(getCar(carIDs.getInt("carID")));
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (connection != null) {
@@ -634,13 +659,13 @@ public abstract class CentralDataStorage {
 	 * @return returns true if a future ride for the user was found and removed successfully, and
 	 * false otherwise.
 	 */
-	public static int removeNextRide (final int userID) {
+	public static boolean removeNextRide (final int userID) {
 		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
 			}
-			return 0;
+			return false;
 		}
 		int rideID = Integer.MAX_VALUE;
 		try {
@@ -654,7 +679,7 @@ public abstract class CentralDataStorage {
 		if (connection != null) {
 			closeConnection();
 		}
-		return rideID;
+		return true;
 	}
 	/**
 	 * adds a request to the database
@@ -689,10 +714,22 @@ public abstract class CentralDataStorage {
 		List<Request> requests = getRequests(userID);
 		int totalRowsAffected = 0;
 		for (Request request : requests) {
-			int rowsAffected = runUpdate("DELETE FROM requests WHERE ride = " + getRequestID(request) + " AND departure = " + departure);
+			int rowsAffected = runUpdate("DELETE FROM requests WHERE ride = " + getRideID(request.ride) + " AND departure = " + departure);
 			totalRowsAffected += rowsAffected;
 		}
 		return (totalRowsAffected > 0);
+	}
+	/**
+	 * removes a request by the passenger and departure time.
+	 * @param userID
+	 * @param rideID
+	 * @return returns true if the request was found and successfully removed, and false otherwise.
+	 */
+	public static boolean removeRideRequest (final int userID, final int rideID) {
+		
+			int rowsAffected = runUpdate("DELETE FROM requests WHERE ride = " + rideID + " AND requestingUser = " + userID);
+			return(rowsAffected>0);
+			
 	}
 	/**
 	 * removes the ride request from the database whose passenger matches the userID field and
@@ -991,11 +1028,11 @@ public abstract class CentralDataStorage {
 	 * @param number
 	 * @return The User, if any, matching the mobile phone number.  This must be tested for null!
 	 */
-	public static User getUserByPhone (final int number) {
+	public static User getUserByPhone (final String number) {
 		User user = null;
 		ResultSet results = runQuery("SELECT userID, memberName, userName, memberPassword, email, address, "
 				+ "mobileNumber, receiveEmailNotification, receiveSMSNotification, carrier from users "
-				+ "WHERE mobileNumber = " + number);
+				+ "WHERE mobileNumber = '" + number + "'");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -1030,5 +1067,27 @@ public abstract class CentralDataStorage {
 		return user;
 	}
 	
+	public static int getNextRideID(int userID){
+		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
+		if (results == null) {
+			if (connection != null) {
+				closeConnection();
+			}
+			return 0;
+		}
+		int rideID = Integer.MAX_VALUE;
+		try {
+			if(results.next()) {
+				rideID = results.getInt("rideID");
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		
+		if(connection!=null){
+			closeConnection();
+		}
+		return rideID;
+	}
 	
 }

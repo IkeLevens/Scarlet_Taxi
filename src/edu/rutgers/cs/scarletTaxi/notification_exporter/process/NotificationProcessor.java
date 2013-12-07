@@ -41,6 +41,7 @@ public class NotificationProcessor {
 				//replace the user's phone number with an sms email for each of the notification recipients
 				for(int i=0;i<recipients.length;i++){
 					recipients[i].mobileNumber = compileSMSEmail(recipients[i]);
+					CentralDataStorage.removeRideRequest(recipients[i].userID,RideN.rideID);
 				}
 				n = new Notification(type,recipients,text);
 				Exporter.exportMultipleNotifications(n);
@@ -166,7 +167,7 @@ public class NotificationProcessor {
 		 		smsEmail = u.mobileNumber + verizon;
 		 		break;
 		 	case 'T':
-		 		smsEmail = u.mobileNumber + tMobile;
+		 		smsEmail = "1" + u.mobileNumber + tMobile;
 		 		break;
 		 	case 'S':
 		 		smsEmail = u.mobileNumber + sprint;
