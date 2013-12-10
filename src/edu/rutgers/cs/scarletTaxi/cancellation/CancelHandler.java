@@ -5,9 +5,11 @@ import edu.rutgers.cs.scarletTaxi.notification_exporter.process.NotificationProc
 
 import java.util.*;
 import java.io.*;
+
 import javax.mail.*;
 import javax.mail.Address;
 import javax.mail.event.*;
+import javax.mail.search.FlagTerm;
 import javax.activation.*;
 
 import com.sun.mail.imap.*;
@@ -50,24 +52,46 @@ public class CancelHandler implements Runnable {
 	 * cancelNextRide(userID) or cancelNextRequest(userID) from CentralDataStrorage.
 	 * @param msg
 	 */
-	private void parseMail(Message msg) {
+	private boolean parseMail(Message msg) {
 		// handle Message msg.
-		System.out.println("in ParseMail: msg = " + msg);
+		
 		try {
-			String message = msg.toString();
-			String From = msg.getFrom().toString();
+			System.out.println("in ParseMail: msg = " + msg.getContent().toString());
+			String message = msg.getContent().toString();
+			String From = msg.getFrom()[0].toString();
+			System.out.println("in ParseMail: msg = " + msg);
+			//Check if email message contains the word cancel
 			if(message.contains("cancel")||message.contains("Cancel")||message.contains("CANCEL")){
+				//split email in order to receive user's phone number
 				String[] parts = From.split("@.");
-				int number = Integer.parseInt(parts[0]);
+				System.out.println(parts[0]);
+				String number = parts[0];
+				//look up user by their phone number
 				User driver = CentralDataStorage.getUserByPhone(number);
-				int rideID = CentralDataStorage.removeNextRide(driver.userID);
+				//get rideID for the next closest departure time for which the user is the driver.
+				int rideID = CentralDataStorage.getNextRideID(driver.userID);
+				//send a ride cancellation notification to all users with a request for this ride.
 				RideNotification rn = new RideNotification(rideID,'C');
 				NotificationProcessor.processRideNotification(rn);
+				Thread.sleep(200);
+				//remove the corresponding ride from the database
+				CentralDataStorage.removeRide(rideID);
+				
 			}
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 	/**
 	 * in this loop, the server will periodically querry the mail server for new incoming email.
@@ -94,20 +118,29 @@ public class CancelHandler implements Runnable {
 		System.err.println("Invalid folder");
 		System.exit(1);
 	    }
-
+	    
 	    folder.open(Folder.READ_WRITE);
-
-	    // Add messageCountListener to listen for new messages
-	    folder.addMessageCountListener(new MessageCountAdapter() {
-			public void messagesAdded(MessageCountEvent e) {
-			    Message[] msgs = e.getMessages();
-			    for(Message msg : msgs) {
-					parseMail(msg);
-					// delete msg from server.
-				}
-			}
-		});
-			
+//	    // Add messageCountListener to listen for new messages
+//	    folder.addMessageCountListener(new MessageCountAdapter() {
+//			public void messagesAdded(MessageCountEvent e) {
+//			    Message[] msgs = e.getMessages();
+//			    for(Message msg : msgs) {
+//			    	System.out.println("get and parse mail attempt 1");
+//					parseMail(msg);
+//					// delete msg from server.
+//				}
+//			}
+//		});
+	    
+	    //Unread
+	    FlagTerm ft = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
+        Message messages[] = folder.search(ft);
+	    
+	    //Message[] messages = folder.getMessages();
+		for(int i=0;i<messages.length;i++){
+			System.out.println("get and parse mail attempt 2");
+			parseMail(messages[i]);
+		}
 	    // Check mail once in "interval" MILLIseconds
 	    boolean supportsIdle = false;
 	    try {
