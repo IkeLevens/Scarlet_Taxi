@@ -98,7 +98,9 @@ public class CancelHandler implements Runnable {
 	 * If new email is found, it will call parseMain(msg) for each new mail found, then delete the
 	 * mail.
 	 */
-	private void checkMessageLoop() {try {
+	private void checkMessageLoop() {
+		
+		try {
 	    Properties props = System.getProperties();
 	    props.setProperty("mail.store.protocol", "imaps");
 
@@ -142,7 +144,7 @@ public class CancelHandler implements Runnable {
 			parseMail(messages[i]);
 		}
 	    // Check mail once in "interval" MILLIseconds
-	    boolean supportsIdle = false;
+	    /*boolean supportsIdle = false;
 	    try {
 			if (folder instanceof IMAPFolder) {
 			    IMAPFolder f = (IMAPFolder)folder;
@@ -169,7 +171,7 @@ public class CancelHandler implements Runnable {
 				    // EXISTS notifications. 
 				    folder.getMessageCount();
 				}
-		    }
+		    }*/
 	
 		} catch (Exception ex) {
 		    ex.printStackTrace();
@@ -185,6 +187,13 @@ public class CancelHandler implements Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		checkMessageLoop();
+		while(running){
+			checkMessageLoop();
+			try {
+				Thread.sleep(this.interval);
+			} catch (InterruptedException e) {
+				running = false;
+			}
+		}
 	}
 }
