@@ -12,8 +12,8 @@ import edu.rutgers.cs.scarletTaxi.centralDataStoratge.RideNotification;
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.User;
 import edu.rutgers.cs.scarletTaxi.notification_exporter.export.Exporter;
 
-/*This class is responsible for processing and compiling the information for each individual notification.
- * 
+/**
+ * This class is responsible for processing and compiling the information for each individual notification.
  * @author Michael Wasserman
  * 
  */
@@ -154,7 +154,11 @@ public class NotificationProcessor {
 		User[] recipients = null;
 		return n;
 	}*/
-	
+	/**
+	 * Generates an email address String to send an SMS message to user.
+	 * @param u An abstraction of a user.
+	 * @return A string which is the email address which will sent an SMS message to user.
+	 */
 	private static String compileSMSEmail(User u){
 		 final String verizon = "@vtext.com";
 		 final String att = "@txt.att.net";

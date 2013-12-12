@@ -23,6 +23,11 @@ import edu.rutgers.cs.scarletTaxi.centralDataStoratge.Car.Color;
  */
 public abstract class CentralDataStorage {
 	
+	/**
+	 * Because objects of type ResultSet are not maintained if the connection over which they were
+	 * retrieved has been closed, we need to maintain an open connection until the contents have
+	 * been handled properly.
+	 */
 	private static Connection connection;
 	
 	/**
@@ -230,6 +235,11 @@ public abstract class CentralDataStorage {
 		}
 		return request;
 	}
+	/**
+	 * Retrieves a requestID which matches the provided Request.
+	 * @param request An abstraction of a request to be a passenger on a ride.
+	 * @return The integer requestID matching request.
+	 */
 	private static int getRequestID (final Request request) {
 		ResultSet results = runQuery("SELECT requestID FROM requests WHERE requestingUser = " + request.passenger.userID + " AND ride = " + getRideId(request.ride));
 		int id = 0;
@@ -251,6 +261,11 @@ public abstract class CentralDataStorage {
 		}
 		return id;
 	}
+	/**
+	 * Retrieves a rideID which matches the provided Ride. 
+	 * @param ride An abstraction of a ride offer from a driver.
+	 * @return The integer rideID matching ride.
+	 */
 	private static int getRideID (final Ride ride) {
 		
 		ResultSet results = runQuery("SELECT rideID FROM rides WHERE origin = " + getLocationID(ride.origin) +
@@ -294,7 +309,6 @@ public abstract class CentralDataStorage {
 				requests.add(getRequest(requestIDs.getInt("requestID")));
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (connection != null) {
@@ -376,6 +390,11 @@ public abstract class CentralDataStorage {
 		}
 		return rides;
 	}
+	/**
+	 * Retrieves a Car object matching the provided carID.
+	 * @param carID An integer representing a car.
+	 * @return A Car object.
+	 */
 	private static Car getCar (final int carID){
 		ResultSet results = runQuery("SELECT driver, make, bodyStyle, color, seats FROM cars WHERE carID = " + carID);
 		if (results == null) {
@@ -424,7 +443,6 @@ public abstract class CentralDataStorage {
 				cars.add(getCar(carIDs.getInt("carID")));
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (connection != null) {
@@ -475,6 +493,11 @@ public abstract class CentralDataStorage {
 				+ newData.receiveSMSNOtification  + " WHERE userID = " + userID);
 		return (rowsAffected > 0);
 	}
+	/**
+	 * Retrieves an addressID which matches the provided Address.
+	 * @param address An abstraction of an address.
+	 * @return The integer addressID which matches address.
+	 */
 	private static int getAddressID(Address address) {
 		int id = 0;
 		ResultSet results = runQuery("SELECT addressID FROM addresses WHERE streetAddress = " + address.streetAddress
@@ -514,6 +537,11 @@ public abstract class CentralDataStorage {
 				+ ", " + newCar.seats + ")");
 		return (rowsAffected > 0);
 	}
+	/**
+	 * Retrieves the integer representation for a given bodyStyle.
+	 * @param bodyStyle A value from the enumeration Car.BodyStyle.
+	 * @return The integer value which matches bodyStyle.
+	 */
 	private static int getBodyStyle(BodyStyle bodyStyle) {
 		ResultSet results = runQuery("SELECT styleID FROM bodyStyles WHERE styleName = " + bodyStyle);
 		if (results == null) {
@@ -535,6 +563,11 @@ public abstract class CentralDataStorage {
 		}
 		return styleID;
 	}
+	/**
+	 * Retrieves the integer representation for a given color.
+	 * @param color A value from the enumeration Car.Color.
+	 * @return The integer value which matches color.
+	 */
 	private static int getColor(Color color) {
 		ResultSet results = runQuery("SELECT colorID FROM colors WHERE colorName = " + color);
 		if (results == null) {
@@ -556,6 +589,11 @@ public abstract class CentralDataStorage {
 		}
 		return colorID;
 	}
+	/**
+	 * Retrieves the carID of the provided car.
+	 * @param car An abstraction of a car.
+	 * @return The integer carID which matches car.
+	 */
 	private static int getCarID (Car car) {
 		int carID= 0;
 		ResultSet results = runQuery("SELECT carID FROM cars WHERE driver = "
@@ -613,6 +651,11 @@ public abstract class CentralDataStorage {
 		int rowsAffected = runUpdate("DELETE FROM rides WHERE rideID = " + rideID);
 		return (rowsAffected > 0);
 	}
+	/**
+	 * Retrieves the rideID that matches the provided Ride.
+	 * @param ride An abstraction of a ride offer.
+	 * @return The integer rideID that matches ride.
+	 */
 	private static int getRideId(Ride ride) {
 		int rideID = 0;
 		int car = getCarID(ride.car);
@@ -679,11 +722,11 @@ public abstract class CentralDataStorage {
 		if (connection != null) {
 			closeConnection();
 		}
-		return true;
+		return (rowsAffected > 0);
 	}
 	/**
 	 * adds a request to the database
-	 * @param newRequest
+	 * @param newRequest An abstraction of a ride request from a passenger.
 	 * @return returns true if the request was added successfully, and false otherwise.
 	 */
 	public static boolean addRequest (final Request newRequest) {
@@ -697,7 +740,7 @@ public abstract class CentralDataStorage {
 	}
 	/**
 	 * removes a request from the database by its requestID.
-	 * @param requestID
+	 * @param requestID An integer requestID which matches a Request.
 	 * @return returns true if the request was found and successfully removed, and false otherwise.
 	 */
 	public static boolean removeRequest (final int requestID) {
@@ -728,7 +771,7 @@ public abstract class CentralDataStorage {
 	public static boolean removeRideRequest (final int userID, final int rideID) {
 		
 			int rowsAffected = runUpdate("DELETE FROM requests WHERE ride = " + rideID + " AND requestingUser = " + userID);
-			return(rowsAffected>0);
+			return (rowsAffected > 0);
 			
 	}
 	/**
@@ -765,7 +808,7 @@ public abstract class CentralDataStorage {
 	/**
 	 * returns a list of all RequestNotifications encapsulating all notifications in the table, then deletes
 	 * them from the table.
-	 * @return
+	 * @return A List<RequestNotification> which holds all the RequestNotifications that were queued.
 	 */
 	public static List<RequestNotification> getRequestNotifications () {
 		ArrayList<RequestNotification> list = new ArrayList<RequestNotification>();
@@ -795,7 +838,7 @@ public abstract class CentralDataStorage {
 	/**
 	 * returns a list of all RideNotifications encapsulating all notifications in the table, then deletes
 	 * them from the table.
-	 * @return
+	 * @return A List<RideNotification> which holds all the RideNotifications that were queued.
 	 */
 	public static List<RideNotification> getRideNotifications () {
 		ArrayList<RideNotification> list = new ArrayList<RideNotification>();
@@ -901,7 +944,10 @@ public abstract class CentralDataStorage {
 		return result;
 	}
 	/**
-	 * runs a query on the MySQL server referenced in PasswordProtector.
+	 * runs a query on the MySQL server referenced in PasswordProtector.  After this is run,
+	 * CentralDataStorage.connection will be maintaining an open mySQL connection to the server
+	 * specified in PasswordProtector.  This needs to be closed by calling
+	 * CentralDataStorage.closeConnection().
 	 * @param query The query to be run, in string form.
 	 * @return The results of the query, or null in the case of a SQLException being thrown.
 	 */
@@ -922,10 +968,13 @@ public abstract class CentralDataStorage {
 			}
 		return result;
 	}
+	/**
+	 * Closes the connection specified in this.connection.
+	 */
 	private static void closeConnection () {
 		try {
-			connection.close();
-			connection = null;
+			CentralDataStorage.connection.close();
+			CentralDataStorage.connection = null;
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -1020,12 +1069,9 @@ public abstract class CentralDataStorage {
 		}
 		return usersA;
 	}
-	
-	
-	
 	/**
 	 * This method retrieves a user by userID.
-	 * @param number
+	 * @param number A phone number, represented as a primitive int.
 	 * @return The User, if any, matching the mobile phone number.  This must be tested for null!
 	 */
 	public static User getUserByPhone (final String number) {
@@ -1066,7 +1112,11 @@ public abstract class CentralDataStorage {
 		}
 		return user;
 	}
-	
+	/**
+	 * Retrieves the integer rideID of the next ride for the user with the given userID.
+	 * @param userID and Integer which matches a user.
+	 * @return The integer rideID of the next ride of the user whose userID was provided.
+	 */
 	public static int getNextRideID(int userID){
 		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
 		if (results == null) {
@@ -1089,5 +1139,4 @@ public abstract class CentralDataStorage {
 		}
 		return rideID;
 	}
-	
 }

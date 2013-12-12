@@ -15,9 +15,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 
-/*This class is responsible for exporting of the compiled notification objects. This class handles
+/**
+ * This class is responsible for exporting of the compiled notification objects. This class handles
  * both the export of email and SMS notifications according to the user's settings.
- * 
  * @author Michael Wasserman
  * 
  */
@@ -65,8 +65,8 @@ public class Exporter {
 		return true;
 	}
 	
-	/*Used for exporting notification with multiple recipients
-	 * 
+	/**
+	 * Used for exporting notification with multiple recipients
 	 * @param Notification
 	 */
 	public static boolean exportMultipleNotifications(Notification n){
@@ -94,7 +94,6 @@ public class Exporter {
 	        		msg.setText(n.text);
 	        		Transport.send(msg);
 	        	}
-	
 	        } catch (AddressException e) {
 	            // ...
 	        	return false;
@@ -105,10 +104,8 @@ public class Exporter {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
-			}
-			
+			}			
 	   }
-        
        return true;
 	}
 }
