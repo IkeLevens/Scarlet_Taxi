@@ -24,7 +24,7 @@
 </nav>			<div class="container">
 				<div class="col-md-8 col-md-offset-2">
 					<div class="jumbotron pagination-centered">
-					<img src="static/images/taxi_large.png" alt="scarlet_taxi" height="40%" width="40%" ></img>
+					<img src="../static/images/taxi_large.png" alt="scarlet_taxi" height="40%" width="40%" ></img>
 					<h1>Scarlet Taxi is a ride sharing web service developed by:</h1>
 					<h3>Andy Krohg</h3>
 					<h3>James Manlapid</h3>

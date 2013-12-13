@@ -75,8 +75,6 @@ public class CancelHandler implements Runnable {
 				RideNotification rn = new RideNotification(rideID,'C');
 				NotificationProcessor.processRideNotification(rn);
 				Thread.sleep(200);
-				//remove the corresponding ride from the database
-				CentralDataStorage.removeRide(rideID);
 				
 			}
 		} catch (MessagingException e) {

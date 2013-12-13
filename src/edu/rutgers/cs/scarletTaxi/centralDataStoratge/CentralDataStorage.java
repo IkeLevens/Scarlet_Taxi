@@ -703,7 +703,7 @@ public abstract class CentralDataStorage {
 	 * false otherwise.
 	 */
 	public static boolean removeNextRide (final int userID) {
-		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
+		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = ANY (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -783,7 +783,7 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeNextRequest (final int userID) {
 		int requestID = 0;
-		ResultSet results = runQuery("SELECT requestID FROM requests WHERE ride = (SELECT rideID FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
+		ResultSet results = runQuery("SELECT requestID FROM requests WHERE ride = (SELECT rideID FROM rides WHERE car = ANY (SELECT carID FROM cars WHERE driver = " + userID
                 +"))ORDER BY (SELECT departure FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
                 + ")) ASC LIMIT 1");
 		if (results == null) {
