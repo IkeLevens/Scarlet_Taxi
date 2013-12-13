@@ -2,6 +2,7 @@ package edu.rutgers.cs.scarletTaxi.notification_exporter.importer;
 import java.util.List;
 
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.CentralDataStorage;
+import edu.rutgers.cs.scarletTaxi.centralDataStoratge.PasswordProtector;
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.RequestNotification;
 import edu.rutgers.cs.scarletTaxi.centralDataStoratge.RideNotification;
 import edu.rutgers.cs.scarletTaxi.notification_exporter.process.NotificationProcessor;
@@ -17,7 +18,7 @@ public class Importer implements Runnable{
 	private List<RideNotification> rideNotifications=null;
 	private List<RequestNotification> requestNotifications=null;
 	private boolean running = true;
-	public static final int INTERVAL = 900000; //The standard sleep interval for this is 15 minutes
+	public static final int INTERVAL = PasswordProtector.INTERVAL; //The standard sleep interval for this is 15 minutes
 	// (900,000 ms)
 	
 	/**

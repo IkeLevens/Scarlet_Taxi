@@ -32,7 +32,7 @@ public class NotificationProcessor {
 			case 'C': //process ride cancellation notification
 				type=NType.RideCancel;
 				recipients = CentralDataStorage.getUsers(RideN.rideID);
-				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
+				time = ride.departure.toString();//""+ride.departure.getHours()+":"+ride.departure.getMinutes();
 				text = "Scarlet Taxi Notification(Ride Cancellation):\n" +
 						driver.username + " has canceled the " + time + " ride to " + ride.destination.locationName + "!\n" +
 								"Please check the rides list for available rides that fit your neccessary criteria, or plan" +
@@ -43,6 +43,7 @@ public class NotificationProcessor {
 					recipients[i].mobileNumber = compileSMSEmail(recipients[i]);
 					CentralDataStorage.removeRideRequest(recipients[i].userID,RideN.rideID);
 				}
+				CentralDataStorage.removeRide(RideN.rideID);
 				n = new Notification(type,recipients,text);
 				Exporter.exportMultipleNotifications(n);
 				break;
@@ -51,7 +52,7 @@ public class NotificationProcessor {
 				recipients = CentralDataStorage.getUsers(RideN.rideID);
 				TimeZone tz = TimeZone.getTimeZone("America/New_York");
 				long mins = (Math.abs(ride.departure.getHours() - (Calendar.getInstance(tz).HOUR_OF_DAY+3))*60) + Math.abs(ride.departure.getMinutes() - Calendar.getInstance(tz).MINUTE);
-				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
+				time = ride.departure.toString();
 				text = "Scarlet Taxi Notification(Pickup Time Reminder):\n" +
 						"Your pickup for the " + time + " ride to " + ride.destination.locationName + " will be arriving in " +
 						mins + " minutes!"
@@ -86,7 +87,7 @@ public class NotificationProcessor {
 				type=NType.NewRequest;
 				recipient = ride.car.driver;
 				rider = request.passenger;
-				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
+				time = ride.departure.toString();
 				text = "Scarlet Taxi Notification(New Request):\n" +
 						rider.username + " has requested a spot in your " + time + " ride to " + ride.destination.locationName + ".\n" +
 						"Thank you for using Scarlet Taxi.";
@@ -101,7 +102,7 @@ public class NotificationProcessor {
 				type=NType.RequestCancel;
 				recipient = ride.car.driver;
 				rider = request.passenger;
-				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
+				time = ride.departure.toString();
 				text = "Scarlet Taxi Notification(Request Cancellation):\n" +
 						rider.username + " has cancelled his/her request for a spot in your " + time + " ride to " + ride.destination.locationName + ".\n" +
 						"Thank you for using Scarlet Taxi.";
@@ -111,12 +112,13 @@ public class NotificationProcessor {
 				}
 				n = new Notification(type,recipient,text);
 				Exporter.exportNotification(n);
+				CentralDataStorage.removeRequest(RequestN.requestID);
 				break;
 			case 'A': //process request approval notification
 				type=NType.RequestApproval;
 				recipient=request.passenger;
 				driver = ride.car.driver;
-				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
+				time = ride.departure.toString();
 				text = "Scarlet Taxi Notification(Request Approval):\n" +
 						driver.username + " has approved your request for a spot in his/her " + time + " ride to " + ride.destination.locationName + "!\n" +
 						"Thank you for using Scarlet Taxi.";
@@ -131,7 +133,7 @@ public class NotificationProcessor {
 				type=NType.RequestDenial;
 				recipient=request.passenger;
 				driver = ride.car.driver;
-				time = ""+ride.departure.getHours()+":"+ride.departure.getMinutes();
+				time = ride.departure.toString();
 				text = "Scarlet Taxi Notification(Request Approval):\n" +
 						"Sorry, but " + driver.username + " has denied your request for a spot in his/her " + time + " ride to " + ride.destination.locationName + ".\n" +
 						"Thank you for using Scarlet Taxi.";
@@ -141,6 +143,7 @@ public class NotificationProcessor {
 				}
 				n = new Notification(type,recipient,text);
 				Exporter.exportNotification(n);
+				CentralDataStorage.removeRequest(RequestN.requestID);
 				break;
 		}
 		//if notification type indicator was not represented with a valid character.

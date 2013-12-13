@@ -67,6 +67,7 @@ public class CancelHandler implements Runnable {
 				System.out.println(parts[0]);
 				String number = parts[0];
 				//look up user by their phone number
+				
 				User driver = CentralDataStorage.getUserByPhone(number);
 				//get rideID for the next closest departure time for which the user is the driver.
 				int rideID = CentralDataStorage.getNextRideID(driver.userID);
@@ -172,7 +173,7 @@ public class CancelHandler implements Runnable {
 				    folder.getMessageCount();
 				}
 		    }*/
-	
+			store.close();
 		} catch (Exception ex) {
 		    ex.printStackTrace();
 		}

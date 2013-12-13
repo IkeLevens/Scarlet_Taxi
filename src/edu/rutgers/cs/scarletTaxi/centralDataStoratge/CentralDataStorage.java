@@ -323,7 +323,7 @@ public abstract class CentralDataStorage {
 	 * checked for null!
 	 */
 	public static Ride getRide (final int rideID) {
-		ResultSet results = runQuery("SELECT car, origin, destination, toCampus, departure, availableSeats FROM rides WHERE rideID = " + rideID);
+		ResultSet results = runQuery("SELECT car, origin, destination, toCampus, TIME_FORMAT(departure, '%T'), availableSeats FROM rides WHERE rideID = " + rideID);
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -341,7 +341,7 @@ public abstract class CentralDataStorage {
 						origin,
 						destination,
 						results.getBoolean("toCampus"),
-						results.getTime("departure"),
+						results.getTime("TIME_FORMAT(departure, '%T')"),
 						results.getInt("availableSeats")
 				);
 			} else {
@@ -656,7 +656,7 @@ public abstract class CentralDataStorage {
 	 * @param ride An abstraction of a ride offer.
 	 * @return The integer rideID that matches ride.
 	 */
-	private static int getRideId(Ride ride) {
+	public static int getRideId(Ride ride) {
 		int rideID = 0;
 		int car = getCarID(ride.car);
 		ResultSet results = runQuery("SELECT rideID FROM rides WHERE car = "
@@ -763,7 +763,7 @@ public abstract class CentralDataStorage {
 		return (totalRowsAffected > 0);
 	}
 	/**
-	 * removes a request by the passenger and departure time.
+	 * Removes a request given the userID and rideID.
 	 * @param userID
 	 * @param rideID
 	 * @return returns true if the request was found and successfully removed, and false otherwise.
@@ -783,9 +783,9 @@ public abstract class CentralDataStorage {
 	 */
 	public static boolean removeNextRequest (final int userID) {
 		int requestID = 0;
-		ResultSet results = runQuery("SELECT requestID FROM requests WHERE ride = (SELECT rideID FROM rides WHERE car = (SELECT carID  FROM cars WHERE driver = " + userID
-				+"))ORDER BY (SELECT departure FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
-				+ ")) ASC LIMIT 1");
+		ResultSet results = runQuery("SELECT requestID FROM requests WHERE ride = (SELECT rideID FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
+                +"))ORDER BY (SELECT departure FROM rides WHERE car = (SELECT carID FROM cars WHERE driver = " + userID
+                + ")) ASC LIMIT 1");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
@@ -1118,7 +1118,7 @@ public abstract class CentralDataStorage {
 	 * @return The integer rideID of the next ride of the user whose userID was provided.
 	 */
 	public static int getNextRideID(int userID){
-		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
+		ResultSet results = runQuery("SELECT rideID FROM rides  WHERE car = ANY (SELECT carID FROM cars WHERE driver = " + userID + ") ORDER BY departure ASC LIMIT 1");
 		if (results == null) {
 			if (connection != null) {
 				closeConnection();
