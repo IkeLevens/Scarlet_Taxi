@@ -67,7 +67,7 @@ public class Exporter {
 	
 	/**
 	 * Used for exporting notification with multiple recipients
-	 * @param Notification
+	 * @param n
 	 */
 	public static boolean exportMultipleNotifications(Notification n){
 		Properties props = new Properties();

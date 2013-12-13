@@ -619,7 +619,7 @@ public abstract class CentralDataStorage {
 	}
 	/**
 	 * removes a specific car from the database.
-	 * @param CarID
+	 * @param carID
 	 * @return returns true if the specified car was successfully removed, and false otherwise.
 	 */
 	public static boolean removeCar (final int carID) {

@@ -27,7 +27,7 @@ public class User {
 	 * @param address
 	 * @param mobileNumber
 	 * @param emailNotification
-	 * @param SMSNoticication
+	 * @param SMSNotification
 	 */
 	public User (final int userID, final String name, final String username, final byte[] password,
 			final String email, final Address address, final String mobileNumber,

@@ -30,7 +30,7 @@ public class Location {
 	}
 	/**
 	 * returns a string representation of this Location.
-	 * @return
+	 * @return a string representation of a Location.
 	 */
 	public String toSring () {
 		return locationName + ": " + campus;
