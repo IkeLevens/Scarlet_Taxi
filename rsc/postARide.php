@@ -275,7 +275,7 @@
 					<?php } ?>
 				</select><br>
 				<h3>Number of Open Seats</h3>
-				<select name="chooseSeats">
+				<select name="openSeats">
 					<option value="" selected="selected" disabled="disabled">Choose Number of Seats</option>
 					<?php
 						$j = 1;
